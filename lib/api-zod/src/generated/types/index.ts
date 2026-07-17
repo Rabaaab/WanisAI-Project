@@ -28,5 +28,7 @@ export * from './memoryPhotoInput';
 export * from './routine';
 export * from './routineInput';
 export * from './routineUpdate';
+export * from './uploadUrlRequest';
+export * from './uploadUrlResponse';
 export * from './userProfile';
 export * from './userProfileInput';

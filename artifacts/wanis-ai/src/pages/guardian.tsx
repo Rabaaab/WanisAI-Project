@@ -170,7 +170,7 @@ export default function Guardian() {
             </form>
           </CardContent>
         </Card>
-      ) : (
+      ) : profile ? (
         <div className="space-y-6">
           <div className="flex justify-end">
             <Button variant="outline" onClick={() => setIsEditing(true)} className="bg-white">Edit Profile</Button>
@@ -241,7 +241,7 @@ export default function Guardian() {
             </Card>
           </div>
         </div>
-      )}
+      ) : null}
     </motion.div>
   )
 }
