@@ -2,31 +2,56 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
+import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 
-const queryClient = new QueryClient();
+import { Navigation } from '@/components/layout';
+import Home from '@/pages/home';
+import Onboarding from '@/pages/onboarding';
+import CheckIn from '@/pages/check-in';
+import CheckInDetail from '@/pages/check-in-detail';
+import Family from '@/pages/family';
+import Guardian from '@/pages/guardian';
+import Memory from '@/pages/memory';
+import Companion from '@/pages/companion';
 
-function Home() {
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+  const [location] = useLocation();
+  const hideNav = location === '/onboarding';
+
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Replit Agent is building...
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Your app will appear here once it's ready.
-        </p>
-      </div>
+    <div className="min-h-[100dvh] bg-background w-full">
+      {!hideNav && <Navigation />}
+      <main className={!hideNav ? "md:pl-64" : ""}>
+        {children}
+      </main>
     </div>
   );
 }
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
-    </Switch>
+    <AppLayout>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/onboarding" component={Onboarding} />
+        <Route path="/check-in" component={CheckIn} />
+        <Route path="/check-in/:id" component={CheckInDetail} />
+        <Route path="/family" component={Family} />
+        <Route path="/memory" component={Memory} />
+        <Route path="/guardian" component={Guardian} />
+        <Route path="/companion" component={Companion} />
+        <Route component={NotFound} />
+      </Switch>
+    </AppLayout>
   );
 }
 

@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface FamilySummary {
+  totalMembers: number;
+  emergencyContacts: number;
+  hasPhotos: number;
 }

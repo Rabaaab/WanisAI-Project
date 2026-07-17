@@ -3,20 +3,33 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: WanisAI API - consent-first cognitive health companion
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: profile
+    description: User profile and consent
+  - name: family
+    description: Family members
+  - name: routines
+    description: Daily routines
+  - name: checkins
+    description: Weekly check-ins and AI analysis
+  - name: guardian
+    description: Guardian mode - Hajj/Umrah safety
+  - name: memory
+    description: Memory companion - photo lookup
+  - name: anthropic
+    description: Anthropic AI chat operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +37,574 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /profile:
+    get:
+      operationId: getProfile
+      tags: [profile]
+      summary: Get user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "404":
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    put:
+      operationId: upsertProfile
+      tags: [profile]
+      summary: Create or update user profile (includes consent)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileInput"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /family-members:
+    get:
+      operationId: listFamilyMembers
+      tags: [family]
+      summary: List all family members
+      responses:
+        "200":
+          description: Family members list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FamilyMember"
+    post:
+      operationId: createFamilyMember
+      tags: [family]
+      summary: Add a family member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FamilyMemberInput"
+      responses:
+        "201":
+          description: Created family member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyMember"
+
+  /family-members/summary:
+    get:
+      operationId: getFamilyMembersSummary
+      tags: [family]
+      summary: Get summary of family network
+      responses:
+        "200":
+          description: Family summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilySummary"
+
+  /family-members/{id}:
+    get:
+      operationId: getFamilyMember
+      tags: [family]
+      summary: Get a family member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Family member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyMember"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      operationId: updateFamilyMember
+      tags: [family]
+      summary: Update a family member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FamilyMemberUpdate"
+      responses:
+        "200":
+          description: Updated family member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyMember"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteFamilyMember
+      tags: [family]
+      summary: Remove a family member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /routines:
+    get:
+      operationId: listRoutines
+      tags: [routines]
+      summary: List daily routines
+      responses:
+        "200":
+          description: Routines list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Routine"
+    post:
+      operationId: createRoutine
+      tags: [routines]
+      summary: Create a routine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoutineInput"
+      responses:
+        "201":
+          description: Created routine
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Routine"
+
+  /routines/{id}:
+    patch:
+      operationId: updateRoutine
+      tags: [routines]
+      summary: Update a routine
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoutineUpdate"
+      responses:
+        "200":
+          description: Updated routine
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Routine"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteRoutine
+      tags: [routines]
+      summary: Delete a routine
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /check-ins:
+    get:
+      operationId: listCheckIns
+      tags: [checkins]
+      summary: List all weekly check-ins
+      responses:
+        "200":
+          description: Check-ins list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CheckIn"
+    post:
+      operationId: createCheckIn
+      tags: [checkins]
+      summary: Start a new weekly check-in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckInInput"
+      responses:
+        "201":
+          description: Created check-in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckIn"
+
+  /check-ins/dashboard:
+    get:
+      operationId: getCheckInDashboard
+      tags: [checkins]
+      summary: Get check-in trends and baseline comparison
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckInDashboard"
+
+  /check-ins/{id}:
+    get:
+      operationId: getCheckIn
+      tags: [checkins]
+      summary: Get a specific check-in
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Check-in detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckIn"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /check-ins/{id}/analyze:
+    post:
+      operationId: analyzeCheckIn
+      tags: [checkins]
+      summary: Analyze a check-in with Claude AI (SSE stream)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: SSE stream of analysis
+          content:
+            text/event-stream: {}
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /check-ins/{id}/action-complete:
+    patch:
+      operationId: markActionComplete
+      tags: [checkins]
+      summary: Mark suggested action as completed
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActionCompleteInput"
+      responses:
+        "200":
+          description: Updated check-in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckIn"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /guardian-profile:
+    get:
+      operationId: getGuardianProfile
+      tags: [guardian]
+      summary: Get guardian/pilgrim safety profile
+      responses:
+        "200":
+          description: Guardian profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuardianProfile"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    put:
+      operationId: upsertGuardianProfile
+      tags: [guardian]
+      summary: Create or update guardian profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuardianProfileInput"
+      responses:
+        "200":
+          description: Updated guardian profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuardianProfile"
+
+  /memory-photos:
+    get:
+      operationId: listMemoryPhotos
+      tags: [memory]
+      summary: List all memory companion photos
+      responses:
+        "200":
+          description: Memory photos list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemoryPhoto"
+    post:
+      operationId: createMemoryPhoto
+      tags: [memory]
+      summary: Add a memory photo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryPhotoInput"
+      responses:
+        "201":
+          description: Created memory photo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemoryPhoto"
+
+  /memory-photos/{id}:
+    delete:
+      operationId: deleteMemoryPhoto
+      tags: [memory]
+      summary: Delete a memory photo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /anthropic/conversations:
+    get:
+      operationId: listAnthropicConversations
+      tags: [anthropic]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnthropicConversation"
+    post:
+      operationId: createAnthropicConversation
+      tags: [anthropic]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnthropicConversationInput"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnthropicConversation"
+
+  /anthropic/conversations/{id}:
+    get:
+      operationId: getAnthropicConversation
+      tags: [anthropic]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnthropicConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteAnthropicConversation
+      tags: [anthropic]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /anthropic/conversations/{id}/messages:
+    get:
+      operationId: listAnthropicMessages
+      tags: [anthropic]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnthropicMessage"
+    post:
+      operationId: sendAnthropicMessage
+      tags: [anthropic]
+      summary: Send a message and receive an AI response (SSE stream)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnthropicMessageInput"
+      responses:
+        "200":
+          description: SSE stream of assistant response chunks
+          content:
+            text/event-stream: {}
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +615,445 @@ components:
       required:
         - status
 
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        dateOfBirth:
+          type: ["string", "null"]
+        photoUrl:
+          type: ["string", "null"]
+        consentGiven:
+          type: boolean
+        consentNotes:
+          type: ["string", "null"]
+        guardianModeEnabled:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - consentGiven
+        - guardianModeEnabled
+        - createdAt
+        - updatedAt
+
+    UserProfileInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        dateOfBirth:
+          type: string
+        photoUrl:
+          type: string
+        consentGiven:
+          type: boolean
+        consentNotes:
+          type: string
+        guardianModeEnabled:
+          type: boolean
+      required:
+        - name
+        - consentGiven
+
+    FamilyMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        relationship:
+          type: string
+        photoUrl:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        isEmergencyContact:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - relationship
+        - isEmergencyContact
+        - createdAt
+
+    FamilyMemberInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        relationship:
+          type: string
+          minLength: 1
+        photoUrl:
+          type: string
+        phone:
+          type: string
+        isEmergencyContact:
+          type: boolean
+      required:
+        - name
+        - relationship
+
+    FamilyMemberUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        relationship:
+          type: string
+        photoUrl:
+          type: string
+        phone:
+          type: string
+        isEmergencyContact:
+          type: boolean
+
+    FamilySummary:
+      type: object
+      properties:
+        totalMembers:
+          type: integer
+        emergencyContacts:
+          type: integer
+        hasPhotos:
+          type: integer
+      required:
+        - totalMembers
+        - emergencyContacts
+        - hasPhotos
+
+    Routine:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        time:
+          type: ["string", "null"]
+        frequency:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - frequency
+        - createdAt
+
+    RoutineInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        time:
+          type: string
+        frequency:
+          type: string
+      required:
+        - name
+        - frequency
+
+    RoutineUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        time:
+          type: string
+        frequency:
+          type: string
+
+    CheckIn:
+      type: object
+      properties:
+        id:
+          type: integer
+        weekOf:
+          type: string
+        prompt:
+          type: string
+        response:
+          type: ["string", "null"]
+        mood:
+          type: ["string", "null"]
+        socialEngagement:
+          type: ["string", "null"]
+        analysisResult:
+          type: ["string", "null"]
+        actionSuggested:
+          type: ["string", "null"]
+        actionCompleted:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - weekOf
+        - prompt
+        - actionCompleted
+        - createdAt
+
+    CheckInInput:
+      type: object
+      properties:
+        weekOf:
+          type: string
+        prompt:
+          type: string
+          minLength: 1
+        response:
+          type: string
+      required:
+        - weekOf
+        - prompt
+
+    ActionCompleteInput:
+      type: object
+      properties:
+        actionCompleted:
+          type: boolean
+      required:
+        - actionCompleted
+
+    CheckInDashboard:
+      type: object
+      properties:
+        totalCheckIns:
+          type: integer
+        recentMoods:
+          type: array
+          items:
+            type: string
+        actionsCompleted:
+          type: integer
+        lastCheckInDate:
+          type: ["string", "null"]
+        baselineTrend:
+          type: string
+      required:
+        - totalCheckIns
+        - recentMoods
+        - actionsCompleted
+        - baselineTrend
+
+    GuardianProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        pilgrimName:
+          type: string
+        pilgrimPhotoUrl:
+          type: ["string", "null"]
+        hotelName:
+          type: string
+        hotelAddress:
+          type: string
+        hotelPhone:
+          type: ["string", "null"]
+        groupLeaderName:
+          type: string
+        groupLeaderPhone:
+          type: string
+        medicalNotes:
+          type: ["string", "null"]
+        emergencyNote:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - pilgrimName
+        - hotelName
+        - hotelAddress
+        - groupLeaderName
+        - groupLeaderPhone
+        - createdAt
+        - updatedAt
+
+    GuardianProfileInput:
+      type: object
+      properties:
+        pilgrimName:
+          type: string
+          minLength: 1
+        pilgrimPhotoUrl:
+          type: string
+        hotelName:
+          type: string
+          minLength: 1
+        hotelAddress:
+          type: string
+          minLength: 1
+        hotelPhone:
+          type: string
+        groupLeaderName:
+          type: string
+          minLength: 1
+        groupLeaderPhone:
+          type: string
+          minLength: 1
+        medicalNotes:
+          type: string
+        emergencyNote:
+          type: string
+      required:
+        - pilgrimName
+        - hotelName
+        - hotelAddress
+        - groupLeaderName
+        - groupLeaderPhone
+
+    MemoryPhoto:
+      type: object
+      properties:
+        id:
+          type: integer
+        personName:
+          type: string
+        relationship:
+          type: string
+        photoUrl:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - personName
+        - relationship
+        - photoUrl
+        - createdAt
+
+    MemoryPhotoInput:
+      type: object
+      properties:
+        personName:
+          type: string
+          minLength: 1
+        relationship:
+          type: string
+          minLength: 1
+        photoUrl:
+          type: string
+          minLength: 1
+        notes:
+          type: string
+      required:
+        - personName
+        - relationship
+        - photoUrl
+
+    AnthropicConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+
+    AnthropicMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+
+    AnthropicConversationInput:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+
+    AnthropicMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+
+    AnthropicConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AnthropicMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
