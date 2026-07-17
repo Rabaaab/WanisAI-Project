@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "WanisAI"
+version = "1.0.0"
+id = "artifacts/wanis-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23794
+
+[services.development]
+run = "pnpm --filter @workspace/wanis-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wanis-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/wanis-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23794"
+BASE_PATH = "/"

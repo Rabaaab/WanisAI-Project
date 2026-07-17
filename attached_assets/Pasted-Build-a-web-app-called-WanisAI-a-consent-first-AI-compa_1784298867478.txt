@@ -1,0 +1,18 @@
+Build a web app called WanisAI — a consent-first AI companion for cognitive health, with two connected modes: everyday prevention support, and a Guardian mode for Hajj/Umrah safety.
+Design system — follow exactly:
+
+Base palette (used everywhere): cream #F6F1E7 as the dominant background, soft blue tint #E4ECF2 for secondary surfaces/cards, gold #C9A227 as the primary accent (buttons, highlights, active states) — gold and cream are the constant thread across the whole app.
+Main app mode (daily companionship/prevention): trust blue #5B84AC for primary interactive elements (buttons, links, active nav). Deep navy #2B3E50 is an accent only — text, icons, borders, small details — never a large fill or background.
+Guardian mode (Hajj/Umrah section only): swap blue for deep green #2F6D4F as the primary interactive color, with sage #7A8B6F as a secondary/softer accent. Forest #1F4A36 is an accent only, same rule as navy — text/icons/borders, never a large fill.
+Keep all dark tones (navy, forest, deep green) restricted to small elements: body text, icons, thin borders, active-state underlines. Backgrounds and large surfaces stay light (cream/blue-tint/light cards) throughout both modes.
+Typography: a warm, humanist sans-serif for body text (e.g. Inter or similar), a slightly more distinctive serif or rounded display face for headings to keep the "companion" feel rather than clinical software.
+Overall feel: calm, warm, trustworthy — not a hospital app. Generous whitespace, soft rounded corners (12px+), no harsh contrast.
+
+Core functionality:
+
+Onboarding/consent flow: the person sets up their own profile while fully lucent — choosing who (family members) can access their data if their memory declines, and registering key info (photos of loved ones with names/relationships, emergency contacts, routines). Explicit, clear consent language throughout — this app never claims a diagnosis.
+Prevention mode (main app, blue): a gentle weekly check-in — a short voice or text reflection prompt ("tell me about your week," "who did you talk to?"). Send the response to Claude (Anthropic API) to assess mood/social-engagement signals, comparing to the person's own baseline over time, not a population average. If isolation or low mood is detected, the agent suggests one concrete action — prompting a specific family member call, suggesting a real activity — and tracks whether it happened. Never says "you have Alzheimer's" — only "a change was noticed compared to your own baseline, consider mentioning it to a doctor."
+Guardian mode (Hajj/Umrah section, green): a distinct section, visually shifted to the green palette. Family pre-registers a pilgrim's safety profile (photo, key contacts, hotel/group info, medical notes) before travel. Includes a simple "where am I / how do I get back" companion screen using the registered info, designed to be usable by someone confused or under stress. Include a note in the UI: "this complements your group leader and Saudi authorities' safety systems — it's the personal safety net for your family."
+Memory companion piece: a simple "who is this?" lookup using family-uploaded, family-verified photos with names and relationships — calm, clear, non-intimidating interface.
+
+Fully mobile responsive — this will likely be used on a phone by an older adult or a stressed family member, so keep tap targets large, text legible, and flows simple. Store the Anthropic API key as a Replit secret, never hardcoded.
