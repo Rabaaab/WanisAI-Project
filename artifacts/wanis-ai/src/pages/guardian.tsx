@@ -334,15 +334,26 @@ export default function Guardian() {
         </div>
 
         {/* ── I'm Lost button ── */}
-        {isSetup && hasMeetingPoint && !isEditing && (
-          <button
-            onClick={() => setShowLost(true)}
-            className="w-full h-20 rounded-2xl text-white text-2xl font-serif font-bold shadow-lg flex items-center justify-center gap-3 transition-transform active:scale-95"
-            style={{ backgroundColor: RUFQA_GREEN }}
-          >
-            <MapPin className="w-7 h-7 shrink-0" />
-            I'm Lost
-          </button>
+        {isSetup && !isEditing && (
+          hasMeetingPoint ? (
+            <button
+              onClick={() => setShowLost(true)}
+              className="w-full h-20 rounded-2xl text-white text-2xl font-serif font-bold shadow-lg flex items-center justify-center gap-3 transition-transform active:scale-95"
+              style={{ backgroundColor: RUFQA_GREEN }}
+            >
+              <MapPin className="w-7 h-7 shrink-0" />
+              I'm Lost
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="w-full h-20 rounded-2xl text-2xl font-serif font-bold shadow-sm flex items-center justify-center gap-3 border-2 border-dashed transition-opacity hover:opacity-70"
+              style={{ borderColor: RUFQA_GREEN, color: RUFQA_GREEN, backgroundColor: RUFQA_GREEN_LIGHT }}
+            >
+              <MapPin className="w-7 h-7 shrink-0" />
+              Set up "I'm Lost" →
+            </button>
+          )
         )}
 
         {isEditing ? (
