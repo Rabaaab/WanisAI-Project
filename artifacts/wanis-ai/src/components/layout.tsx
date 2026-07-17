@@ -4,6 +4,7 @@ import { Home, HeartPulse, Users, BookOpen, MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { KaabaIcon } from "@/components/KaabaIcon"
 import { useMode } from "@/contexts/ModeContext"
+import { SettingsSheet } from "@/components/SettingsSheet"
 
 const RUFQA_COLOR = "#2F6D4F"
 
@@ -111,6 +112,9 @@ export function Navigation() {
       <div className="hidden md:flex w-64 flex-col fixed inset-y-0 left-0 bg-card border-r border-border z-50">
         <div className="p-6">
           <h1 className="text-2xl font-serif font-bold text-foreground">Wanis</h1>
+        </div>
+        <div className="px-4 pb-2 flex items-center justify-between">
+          <SettingsSheet />
         </div>
         <nav className="flex-1 px-4 space-y-1">
           {allNavItems.map((item) => {

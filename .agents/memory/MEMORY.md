@@ -1,0 +1,2 @@
+- [Anthropic integration](anthropic-integration.md) — uses Replit AI integration (not user key); env vars AI_INTEGRATIONS_ANTHROPIC_BASE_URL + AI_INTEGRATIONS_ANTHROPIC_API_KEY must both be set.
+- [PhotoUploader shared component](photo-uploader.md) — canonical file-upload component at artifacts/wanis-ai/src/components/PhotoUploader.tsx; exports photoSrc() helper too.

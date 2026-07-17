@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label"
 import { ImagePlus, Trash2, Heart } from "lucide-react"
 import { motion } from "framer-motion"
+import { PhotoUploader, photoSrc } from "@/components/PhotoUploader"
 
 export default function Memory() {
   const { data: photos, isLoading, refetch } = useListMemoryPhotos()
@@ -24,6 +25,7 @@ export default function Memory() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formData.photoUrl) return
     try {
       await createPhoto.mutateAsync({ data: formData })
       setIsAddOpen(false)
@@ -35,7 +37,7 @@ export default function Memory() {
   }
 
   const handleDelete = async (id: number) => {
-    if (confirm("Remove this photo?")) {
+    if (confirm("Remove this memory?")) {
       try {
         await deletePhoto.mutateAsync({ id })
         refetch()
@@ -67,7 +69,7 @@ export default function Memory() {
               <ImagePlus className="w-5 h-5 mr-2" /> Add Memory
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] bg-background border-none rounded-2xl">
+          <DialogContent className="sm:max-w-[440px] bg-background border-none rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-serif">Add Memory Photo</DialogTitle>
             </DialogHeader>
@@ -80,15 +82,16 @@ export default function Memory() {
                 <Label>Relationship</Label>
                 <Input required value={formData.relationship} onChange={e => setFormData({...formData, relationship: e.target.value})} placeholder="e.g. My Grandson" />
               </div>
-              <div className="space-y-2">
-                <Label>Photo URL</Label>
-                <Input required value={formData.photoUrl} onChange={e => setFormData({...formData, photoUrl: e.target.value})} />
-              </div>
+              <PhotoUploader
+                label="Photo"
+                value={formData.photoUrl}
+                onChange={(path) => setFormData({ ...formData, photoUrl: path })}
+              />
               <div className="space-y-2">
                 <Label>A small note (optional)</Label>
                 <Textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="e.g. He loves playing soccer." />
               </div>
-              <Button type="submit" className="w-full h-12 text-lg mt-4" disabled={createPhoto.isPending}>
+              <Button type="submit" className="w-full h-12 text-lg mt-4" disabled={createPhoto.isPending || !formData.photoUrl}>
                 Save Memory
               </Button>
             </form>
@@ -105,7 +108,11 @@ export default function Memory() {
           {photos.map((photo) => (
             <Card key={photo.id} className="bg-white border-none shadow-md overflow-hidden group">
               <div className="h-64 sm:h-80 relative overflow-hidden bg-secondary">
-                <img src={photo.photoUrl} alt={photo.personName} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img
+                  src={photoSrc(photo.photoUrl) ?? photo.photoUrl}
+                  alt={photo.personName}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                   <Button variant="destructive" size="sm" onClick={() => handleDelete(photo.id)} className="ml-auto">
                     <Trash2 className="w-4 h-4 mr-2" /> Remove

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { motion, AnimatePresence } from "framer-motion"
 import { HeartPulse, Check, ArrowRight, ShieldAlert, User, Users } from "lucide-react"
 import type { ExperienceMode } from "@/contexts/ModeContext"
+import { PhotoUploader } from "@/components/PhotoUploader"
 
 const TOTAL_STEPS = 4
 
@@ -99,6 +100,12 @@ export default function Onboarding() {
                     className="h-14 text-lg bg-white border-none shadow-sm"
                   />
                 </div>
+
+                <PhotoUploader
+                  label="Your photo (optional)"
+                  value={photoUrl}
+                  onChange={setPhotoUrl}
+                />
 
                 <Button
                   size="lg"
