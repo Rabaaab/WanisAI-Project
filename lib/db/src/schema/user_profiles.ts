@@ -10,6 +10,7 @@ export const userProfilesTable = pgTable("user_profiles", {
   consentGiven: boolean("consent_given").notNull().default(false),
   consentNotes: text("consent_notes"),
   guardianModeEnabled: boolean("guardian_mode_enabled").notNull().default(false),
+  experienceMode: text("experience_mode").notNull().default("family"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

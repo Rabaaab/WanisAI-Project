@@ -696,6 +696,9 @@ components:
           type: ["string", "null"]
         guardianModeEnabled:
           type: boolean
+        experienceMode:
+          type: string
+          enum: [personal, family]
         createdAt:
           type: string
           format: date-time
@@ -707,6 +710,7 @@ components:
         - name
         - consentGiven
         - guardianModeEnabled
+        - experienceMode
         - createdAt
         - updatedAt
 
@@ -726,6 +730,9 @@ components:
           type: string
         guardianModeEnabled:
           type: boolean
+        experienceMode:
+          type: string
+          enum: [personal, family]
       required:
         - name
         - consentGiven

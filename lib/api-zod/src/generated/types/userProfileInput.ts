@@ -5,6 +5,7 @@
  * WanisAI API - consent-first cognitive health companion
  * OpenAPI spec version: 0.1.0
  */
+import type { UserProfileInputExperienceMode } from './userProfileInputExperienceMode';
 
 export interface UserProfileInput {
   /** @minLength 1 */
@@ -14,4 +15,5 @@ export interface UserProfileInput {
   consentGiven: boolean;
   consentNotes?: string;
   guardianModeEnabled?: boolean;
+  experienceMode?: UserProfileInputExperienceMode;
 }

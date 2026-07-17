@@ -77,6 +77,7 @@ export const GetProfileResponse = zod.object({
   "consentGiven": zod.boolean(),
   "consentNotes": zod.string().nullish(),
   "guardianModeEnabled": zod.boolean(),
+  "experienceMode": zod.enum(['personal', 'family']),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -94,7 +95,8 @@ export const UpsertProfileBody = zod.object({
   "photoUrl": zod.string().optional(),
   "consentGiven": zod.boolean(),
   "consentNotes": zod.string().optional(),
-  "guardianModeEnabled": zod.boolean().optional()
+  "guardianModeEnabled": zod.boolean().optional(),
+  "experienceMode": zod.enum(['personal', 'family']).optional()
 })
 
 export const UpsertProfileResponse = zod.object({
@@ -105,6 +107,7 @@ export const UpsertProfileResponse = zod.object({
   "consentGiven": zod.boolean(),
   "consentNotes": zod.string().nullish(),
   "guardianModeEnabled": zod.boolean(),
+  "experienceMode": zod.enum(['personal', 'family']),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })

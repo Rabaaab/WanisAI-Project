@@ -31,4 +31,6 @@ export * from './routineUpdate';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';
 export * from './userProfile';
+export * from './userProfileExperienceMode';
 export * from './userProfileInput';
+export * from './userProfileInputExperienceMode';

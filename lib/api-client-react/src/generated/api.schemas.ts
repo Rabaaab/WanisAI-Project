@@ -13,6 +13,14 @@ export interface ApiError {
   error: string;
 }
 
+export type UserProfileExperienceMode = typeof UserProfileExperienceMode[keyof typeof UserProfileExperienceMode];
+
+
+export const UserProfileExperienceMode = {
+  personal: 'personal',
+  family: 'family',
+} as const;
+
 export interface UserProfile {
   id: number;
   name: string;
@@ -24,9 +32,18 @@ export interface UserProfile {
   /** @nullable */
   consentNotes?: string | null;
   guardianModeEnabled: boolean;
+  experienceMode: UserProfileExperienceMode;
   createdAt: string;
   updatedAt: string;
 }
+
+export type UserProfileInputExperienceMode = typeof UserProfileInputExperienceMode[keyof typeof UserProfileInputExperienceMode];
+
+
+export const UserProfileInputExperienceMode = {
+  personal: 'personal',
+  family: 'family',
+} as const;
 
 export interface UserProfileInput {
   /** @minLength 1 */
@@ -36,6 +53,7 @@ export interface UserProfileInput {
   consentGiven: boolean;
   consentNotes?: string;
   guardianModeEnabled?: boolean;
+  experienceMode?: UserProfileInputExperienceMode;
 }
 
 export interface FamilyMember {
