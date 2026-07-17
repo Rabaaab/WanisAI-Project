@@ -1,0 +1,26 @@
+Phase 1 — Fix broken functionality first
+
+Companion chat isn't returning any response from Wanis — debug the Anthropic API integration, confirm the API key is set and the call is firing, and show a visible response for every message sent.
+The microphone icon doesn't actually capture voice input — implement real voice input (speech-to-text) for Companion and Check-in.
+Replace the "Photo URL" field (Add Memory Photo and any profile setup) with a direct file upload — drag-and-drop or device photo picker, not a pasted link.
+Add account logout and account switching — currently there's no way to sign out or use the app with more than one account.
+
+Phase 2 — Rename and re-icon Hajj/Umrah section
+5. Rename "Guardian"/"Rafiq" to "Hajj/Umrah Rufqa" everywhere in the app. Give it a distinct Kaaba-silhouette icon rendered in the green Rufqa palette so it's visually distinguishable from the rest of the nav at a glance.
+Phase 3 — Home screen redesign (Pass Jeunes structure + Wanis character)
+6. Restructure the home screen with a hero "pass card" at the top: the person's name, their photo or an illustrated Wanis companion character, and one warm status line.
+7. Below it, 4-5 large photo/illustration tiles, one per core function (Talk with Wanis, Check-in, Memory, Family, Hajj/Umrah Rufqa) — each tile filled mostly with a real warm illustration relevant to its function (not flat color bars), with a short plain-language label. No dense grid of small icons — few tiles, generously sized, inspired by how Pass Jeunes displays its browsable categories as big photo tiles.
+8. Create a simple recurring illustrated character for Wanis — soft, warm, simple shape/line style — that appears in the hero card and reappears in small contextual variations elsewhere in the app (e.g. a listening pose in Companion).
+9. Generate respectful illustrated (not real stock photo) profile portraits, gender-matched to each registered profile, styled consistently with the app's palette.
+Phase 4 — Accessibility pass
+10. Add two experience modes, chosen at onboarding: a simplified "for me" mode for the person with cognitive decline (one clear action per screen, large tap targets, icon + text label always paired, consistent fixed navigation position, minimal motion, no interrupting pop-ups) and a fuller "family" mode with detailed history, settings, and Rufqa registration.
+11. Ensure strong text-to-background contrast everywhere for legibility (important for older eyes), while keeping the overall palette calm and non-jarring — avoid bright, saturated, or alarm-like colors even in alert states.
+Phase 5 — Make the AI agent visible and real
+12. Restructure Check-in into a real multi-step pipeline: read the check-in, compare against the person's own prior check-ins, classify as stable/mild/notable change, generate one specific evidenced suggestion, then run a brief verification pass before showing it. Show a short visible status sequence ("Reading your check-in… comparing to your recent pattern… preparing a suggestion") so the reasoning is visibly happening.
+13. Confirm the Rufqa reorientation screen references the actual registered profile data (real name, group leader, hotel), not placeholder text.
+Phase 6 — Language and cultural features
+14. Add Arabic, English, and French language support with full right-to-left layout in Arabic, switchable from the nav.
+15. Add daily prayer times using the Aladhan API (free, no key required), based on the user's location, shown prominently as a routine anchor — especially in Rufqa mode.
+16. Add a small duas feature (travel, calm/distress, gratitude) accessible from home.
+17. Add a "Recitation Companion" — short familiar Quran passages to listen to or follow along with, framed as comfort and reminiscence, not memorization training.
+Keep the established blue/gold/cream main palette and green Rufqa palette throughout. Fully mobile responsive. Store the Anthropic API key as a Replit secret.
