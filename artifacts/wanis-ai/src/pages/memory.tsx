@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label"
 import { ImagePlus, Trash2, Heart } from "lucide-react"
 import { motion } from "framer-motion"
 import { PhotoUploader, photoSrc } from "@/components/PhotoUploader"
+import { useLang } from "@/contexts/LanguageContext"
 
 export default function Memory() {
+  const { t } = useLang()
   const { data: photos, isLoading, refetch } = useListMemoryPhotos()
   const createPhoto = useCreateMemoryPhoto()
   const deletePhoto = useDeleteMemoryPhoto()
-  
+
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [formData, setFormData] = useState({
     personName: "",
@@ -37,7 +39,7 @@ export default function Memory() {
   }
 
   const handleDelete = async (id: number) => {
-    if (confirm("Remove this memory?")) {
+    if (confirm(t("remove_memory"))) {
       try {
         await deletePhoto.mutateAsync({ id })
         refetch()
@@ -62,37 +64,37 @@ export default function Memory() {
             Familiar faces and fond memories.
           </p>
         </div>
-        
+
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button className="w-full md:w-auto h-12">
-              <ImagePlus className="w-5 h-5 mr-2" /> Add Memory
+              <ImagePlus className="w-5 h-5 me-2" /> {t("add_memory")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[440px] bg-background border-none rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-serif">Add Memory Photo</DialogTitle>
+              <DialogTitle className="text-2xl font-serif">{t("add_memory")}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label>Person's Name</Label>
+                <Label>{t("person_name")}</Label>
                 <Input required value={formData.personName} onChange={e => setFormData({...formData, personName: e.target.value})} />
               </div>
               <div className="space-y-2">
-                <Label>Relationship</Label>
+                <Label>{t("relationship")}</Label>
                 <Input required value={formData.relationship} onChange={e => setFormData({...formData, relationship: e.target.value})} placeholder="e.g. My Grandson" />
               </div>
               <PhotoUploader
-                label="Photo"
+                label={t("photo")}
                 value={formData.photoUrl}
                 onChange={(path) => setFormData({ ...formData, photoUrl: path })}
               />
               <div className="space-y-2">
-                <Label>A small note (optional)</Label>
+                <Label>{t("a_small_note")}</Label>
                 <Textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="e.g. He loves playing soccer." />
               </div>
               <Button type="submit" className="w-full h-12 text-lg mt-4" disabled={createPhoto.isPending || !formData.photoUrl}>
-                Save Memory
+                {t("save_memory")}
               </Button>
             </form>
           </DialogContent>

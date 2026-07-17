@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -50,7 +50,7 @@
   --background: 40 43% 94%;
   /* Deep navy #2B3E50 */
   --foreground: 209 30% 24%;
-  
+
   /* Deep navy thin borders (10% opacity equivalent, using hsl) */
   --border: 209 30% 85%;
   --input: 209 30% 85%;
@@ -86,7 +86,7 @@
 
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: 'Lora', Georgia, serif;
-  
+
   --radius: 0.75rem;
 }
 
@@ -263,4 +263,49 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif text-foreground;
   }
+}
+
+/* ── RTL layout support ── */
+[dir="rtl"] .feature-card {
+  flex-direction: row-reverse;
+}
+[dir="rtl"] .hero-ring {
+  right: auto;
+  left: -60px;
+}
+
+/* ── Tile hover lift ── */
+.feature-tile {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.feature-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px hsl(210 32% 35% / 0.13);
+}
+
+/* ── High-contrast text on calm backgrounds ── */
+.text-foreground {
+  color: hsl(var(--foreground));
+}
+
+/* ── Arabic font override for dua/recitation ── */
+[lang="ar"] body,
+[dir="rtl"] body {
+  font-family: 'Amiri', 'Inter', sans-serif;
+}
+[lang="ar"] .font-serif,
+[dir="rtl"] .font-serif {
+  font-family: 'Amiri', 'Lora', Georgia, serif;
+}
+
+/* ── Alert states — calm, non-jarring colors ── */
+.alert-calm {
+  background: hsl(45 66% 47% / 0.12);
+  border-color: hsl(45 66% 47% / 0.30);
+  color: hsl(45 40% 30%);
+}
+.alert-info {
+  background: hsl(210 32% 52% / 0.10);
+  border-color: hsl(210 32% 52% / 0.25);
+  color: hsl(210 32% 30%);
 }

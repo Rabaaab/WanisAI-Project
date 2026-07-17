@@ -1,59 +1,52 @@
-import { createContext, useContext, useState, useCallback } from "react"
-import { useGetProfile, useUpsertProfile } from "@workspace/api-client-react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useUpsertProfile, useGetProfile } from "@workspace/api-client-react"
 
 export type ExperienceMode = "personal" | "family"
 
 interface ModeContextValue {
   mode: ExperienceMode
-  isLoading: boolean
-  setMode: (mode: ExperienceMode) => Promise<void>
+  setMode: (m: ExperienceMode) => void
 }
 
 const ModeContext = createContext<ModeContextValue>({
   mode: "family",
-  isLoading: false,
-  setMode: async () => {},
+  setMode: () => {},
 })
 
-export function ModeProvider({ children }: { children: React.ReactNode }) {
+export function ModeProvider({ children }: { children: ReactNode }) {
   const { data: profile, isLoading } = useGetProfile()
   const upsertProfile = useUpsertProfile()
-  const [localMode, setLocalMode] = useState<ExperienceMode | null>(null)
 
-  const derivedMode: ExperienceMode =
-    localMode ?? (profile?.experienceMode === "personal" ? "personal" : "family")
+  const [mode, setModeState] = useState<ExperienceMode>("family")
 
-  const setMode = useCallback(
-    async (newMode: ExperienceMode) => {
-      setLocalMode(newMode)
-      if (!profile) return
-      try {
-        await upsertProfile.mutateAsync({
-          data: {
-            name: profile.name,
-            consentGiven: profile.consentGiven,
-            dateOfBirth: profile.dateOfBirth ?? undefined,
-            photoUrl: profile.photoUrl ?? undefined,
-            consentNotes: profile.consentNotes ?? undefined,
-            guardianModeEnabled: profile.guardianModeEnabled,
-            experienceMode: newMode,
-          },
-        })
-      } catch (e) {
-        setLocalMode(null)
-        console.error("Failed to save experience mode", e)
-      }
-    },
-    [profile, upsertProfile]
-  )
+  // Sync from profile once loaded
+  useEffect(() => {
+    if (!isLoading && profile?.experienceMode) {
+      setModeState(profile.experienceMode as ExperienceMode)
+    }
+  }, [profile, isLoading])
+
+  const setMode = (m: ExperienceMode) => {
+    setModeState(m)
+    // Persist optimistically — don't await, don't block UI
+    upsertProfile
+      .mutateAsync({
+        data: {
+          experienceMode: m,
+        },
+      })
+      .catch(() => {
+        // Silently ignore persistence errors
+      })
+  }
 
   return (
-    <ModeContext.Provider value={{ mode: derivedMode, isLoading, setMode }}>
+    <ModeContext.Provider value={{ mode, setMode }}>
       {children}
     </ModeContext.Provider>
   )
 }
 
-export function useMode() {
+export function useMode(): ModeContextValue {
   return useContext(ModeContext)
 }

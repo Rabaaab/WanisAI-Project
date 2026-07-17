@@ -145,6 +145,15 @@ router.post(
 
     let fullResponse = "";
 
+    const apiKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
+    if (!apiKey || apiKey === "missing-key") {
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.write(`data: ${JSON.stringify({ error: "Anthropic API key is not configured. Set ANTHROPIC_API_KEY in your environment." })}\n\n`);
+      res.end();
+      return;
+    }
+
     try {
       const stream = anthropic.messages.stream({
         model: "claude-sonnet-4-6",

@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { HeartPulse, Check, ArrowRight, ShieldAlert, User, Users } from "lucide-react"
 import type { ExperienceMode } from "@/contexts/ModeContext"
 import { PhotoUploader } from "@/components/PhotoUploader"
+import { useLang } from "@/contexts/LanguageContext"
 
 const TOTAL_STEPS = 4
 
@@ -15,6 +16,7 @@ export default function Onboarding() {
   const [_, setLocation] = useLocation()
   const [step, setStep] = useState(1)
   const upsertProfile = useUpsertProfile()
+  const { t } = useLang()
 
   const [name, setName] = useState("")
   const [dob, setDob] = useState("")

@@ -6,12 +6,14 @@ const apiKey =
   process.env.ANTHROPIC_API_KEY;
 
 if (!apiKey) {
-  throw new Error(
-    "No Anthropic API key found. Set AI_INTEGRATIONS_ANTHROPIC_API_KEY or ANTHROPIC_API_KEY."
+  console.warn(
+    "[wanis] WARNING: No Anthropic API key found. " +
+    "Set AI_INTEGRATIONS_ANTHROPIC_API_KEY or ANTHROPIC_API_KEY. " +
+    "Chat and check-in analysis will return errors until a key is set."
   );
 }
 
 export const anthropic = new Anthropic({
-  apiKey,
+  apiKey: apiKey ?? "missing-key",
   ...(baseURL ? { baseURL } : {}),
 });

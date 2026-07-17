@@ -6,16 +6,20 @@ import {
 } from "@workspace/api-client-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Mic, MicOff, Send, MessageCircle } from "lucide-react"
+import { Mic, MicOff, Send, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
+import { WanisCharacter } from "@/components/WanisCharacter"
+import { useLang } from "@/contexts/LanguageContext"
 
-// SpeechRecognition shim
 const getSR = () =>
   typeof window !== "undefined"
     ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     : null
 
+const SR_LANG: Record<string, string> = { en: "en-US", ar: "ar-SA", fr: "fr-FR" }
+
 export default function Companion() {
+  const { t, lang } = useLang()
   const { data: conversations, refetch: refetchConvos } =
     useListAnthropicConversations()
   const createConvo = useCreateAnthropicConversation()
@@ -30,12 +34,14 @@ export default function Companion() {
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamingContent, setStreamingContent] = useState("")
   const [isListening, setIsListening] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const [srAvailable] = useState(() => !!getSR())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const didInitRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const recognitionRef = useRef<any>(null)
 
-  // Auto-create or resume today's conversation on load
+  // Auto-create or resume today's conversation
   useEffect(() => {
     if (!conversations || didInitRef.current) return
 
@@ -60,7 +66,7 @@ export default function Companion() {
           refetchConvos()
           didInitRef.current = true
         })
-        .catch(console.error)
+        .catch(() => setErrorMessage("Could not start a conversation. Please refresh."))
     }
   }, [conversations])
 
@@ -74,6 +80,7 @@ export default function Companion() {
     setInput("")
     setIsStreaming(true)
     setStreamingContent("")
+    setErrorMessage("")
 
     try {
       const res = await fetch(
@@ -85,9 +92,21 @@ export default function Companion() {
         }
       )
 
-      if (!res.body) throw new Error("No response body")
+      if (!res.ok) {
+        setErrorMessage(`Server error (${res.status}). Please try again.`)
+        setIsStreaming(false)
+        return
+      }
+
+      if (!res.body) {
+        setErrorMessage("No response received. Please try again.")
+        setIsStreaming(false)
+        return
+      }
+
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
+      let gotContent = false
 
       while (true) {
         const { done, value } = await reader.read()
@@ -97,15 +116,25 @@ export default function Companion() {
           if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.slice(6))
-              if (data.done) break
-              if (data.content) setStreamingContent((prev) => prev + data.content)
+              if (data.error) {
+                setErrorMessage(data.error)
+              } else if (data.content) {
+                gotContent = true
+                setStreamingContent((prev) => prev + data.content)
+              }
             } catch (_) {}
           }
         }
       }
+
+      if (!gotContent && !errorMessage) {
+        setErrorMessage("No response from Wanis. Check the API key is configured.")
+      }
+
       refetchMessages()
     } catch (e) {
       console.error(e)
+      setErrorMessage("Could not connect to Wanis. Check your network and try again.")
     } finally {
       setIsStreaming(false)
       setStreamingContent("")
@@ -115,8 +144,18 @@ export default function Companion() {
   const handleVoice = () => {
     const SR = getSR()
     if (!SR) return
+
+    // Toggle off if already listening
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop()
+      recognitionRef.current = null
+      setIsListening(false)
+      return
+    }
+
     const recognition = new SR()
-    recognition.lang = "en-US"
+    recognitionRef.current = recognition
+    recognition.lang = SR_LANG[lang] ?? "en-US"
     recognition.interimResults = false
     recognition.maxAlternatives = 1
     recognition.onresult = (e: any) => {
@@ -124,8 +163,14 @@ export default function Companion() {
       setInput((prev) => (prev ? prev + " " + transcript : transcript))
       inputRef.current?.focus()
     }
-    recognition.onerror = () => setIsListening(false)
-    recognition.onend = () => setIsListening(false)
+    recognition.onerror = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
+    recognition.onend = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
     recognition.start()
     setIsListening(true)
   }
@@ -136,21 +181,33 @@ export default function Companion() {
   return (
     <div className="h-[100dvh] pb-[80px] md:pb-0 flex flex-col bg-background">
       {/* Header */}
-      <div className="shrink-0 px-6 py-5 border-b border-border bg-card/60">
+      <div className="shrink-0 px-6 py-4 border-b border-border bg-card/60">
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
-          <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center">
-            <MessageCircle className="w-5 h-5 text-accent" />
-          </div>
+          <WanisCharacter pose={isStreaming ? "listening" : "default"} size={44} />
           <div>
             <h1 className="font-serif font-semibold text-foreground text-lg leading-tight">
-              Wanis is here
+              {t("companion_title")}
             </h1>
             <p className="text-xs text-muted-foreground font-sans">
-              Your daily companion
+              {isStreaming ? t("wanis_status") : t("companion_subtitle")}
             </p>
           </div>
         </div>
       </div>
+
+      {/* Error banner */}
+      {errorMessage && (
+        <div className="shrink-0 mx-4 mt-3 flex items-start gap-2 bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-sm text-destructive font-sans">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{errorMessage}</span>
+          <button
+            onClick={() => setErrorMessage("")}
+            className="ms-auto text-destructive/60 hover:text-destructive text-xs underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
@@ -159,17 +216,18 @@ export default function Companion() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-center justify-center h-full p-8 text-center gap-8"
+            className="flex flex-col items-center justify-center h-full p-8 text-center gap-6"
           >
+            <WanisCharacter pose="waving" size={120} />
             <div className="space-y-3 max-w-sm">
               <p className="text-3xl font-serif font-medium text-foreground leading-snug">
-                I'm here.
+                {t("im_here")}
               </p>
               <p className="text-xl font-serif text-foreground/80 leading-snug">
-                What's on your mind today?
+                {t("whats_on_your_mind")}
               </p>
               <p className="text-base text-muted-foreground font-sans">
-                You can type, or tap the microphone to speak.
+                {t("type_or_tap")}
               </p>
             </div>
             <Button
@@ -177,7 +235,7 @@ export default function Companion() {
               className="h-16 px-10 rounded-2xl text-lg font-semibold shadow-md"
               onClick={() => inputRef.current?.focus()}
             >
-              Start talking
+              {t("start_talking")}
             </Button>
           </motion.div>
         ) : (
@@ -187,8 +245,11 @@ export default function Companion() {
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
+                {msg.role === "assistant" && (
+                  <WanisCharacter pose="listening" size={32} className="mt-1 me-2 shrink-0" />
+                )}
                 <div
-                  className={`max-w-[88%] md:max-w-[78%] rounded-2xl p-4 text-base leading-relaxed ${
+                  className={`max-w-[80%] md:max-w-[72%] rounded-2xl p-4 text-base leading-relaxed ${
                     msg.role === "user"
                       ? "bg-primary text-primary-foreground rounded-tr-sm"
                       : "bg-card text-foreground rounded-tl-sm shadow-sm border border-card-border"
@@ -200,19 +261,14 @@ export default function Companion() {
             ))}
 
             {isStreaming && (
-              <div className="flex justify-start">
-                <div className="max-w-[88%] md:max-w-[78%] rounded-2xl p-4 text-base leading-relaxed bg-card text-foreground rounded-tl-sm shadow-sm border border-card-border">
+              <div className="flex justify-start items-start gap-2">
+                <WanisCharacter pose="listening" size={32} className="mt-1 shrink-0" />
+                <div className="max-w-[80%] rounded-2xl p-4 text-base leading-relaxed bg-card text-foreground rounded-tl-sm shadow-sm border border-card-border">
                   {streamingContent || (
                     <span className="flex gap-1.5 items-center h-6">
                       <span className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce" />
-                      <span
-                        className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce"
-                        style={{ animationDelay: "0.2s" }}
-                      />
-                      <span
-                        className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce"
-                        style={{ animationDelay: "0.4s" }}
-                      />
+                      <span className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "0.2s" }} />
+                      <span className="w-2.5 h-2.5 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "0.4s" }} />
                     </span>
                   )}
                 </div>
@@ -226,13 +282,9 @@ export default function Companion() {
       {/* Input bar */}
       <div className="shrink-0 p-4 bg-background border-t border-border">
         <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleSend()
-          }}
-          className="flex gap-2 max-w-2xl mx-auto relative items-center"
+          onSubmit={(e) => { e.preventDefault(); handleSend() }}
+          className="flex gap-2 max-w-2xl mx-auto items-center"
         >
-          {/* Mic button */}
           {srAvailable && (
             <Button
               type="button"
@@ -240,18 +292,14 @@ export default function Companion() {
               variant="outline"
               onClick={handleVoice}
               disabled={isStreaming}
-              aria-label={isListening ? "Listening…" : "Speak your message"}
+              aria-label={isListening ? t("listening") : "Speak your message"}
               className={`h-14 w-14 rounded-full shrink-0 border-2 transition-colors ${
                 isListening
                   ? "border-destructive text-destructive bg-destructive/5"
                   : "border-border text-muted-foreground hover:text-primary hover:border-primary"
               }`}
             >
-              {isListening ? (
-                <MicOff className="w-5 h-5" />
-              ) : (
-                <Mic className="w-5 h-5" />
-              )}
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </Button>
           )}
 
@@ -259,8 +307,8 @@ export default function Companion() {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isListening ? "Listening…" : "Type a message…"}
-            className="h-14 pl-6 pr-4 rounded-full bg-white shadow-sm border-input text-base flex-1"
+            placeholder={isListening ? t("listening") : t("type_message")}
+            className="h-14 px-6 rounded-full bg-white shadow-sm border-input text-base flex-1"
             disabled={isStreaming || isListening}
           />
 
@@ -268,7 +316,7 @@ export default function Companion() {
             type="submit"
             size="icon"
             disabled={!input.trim() || isStreaming}
-            aria-label="Send message"
+            aria-label={t("send")}
             className="h-14 w-14 rounded-full shrink-0"
           >
             <Send className="w-5 h-5" />

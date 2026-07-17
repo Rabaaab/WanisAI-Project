@@ -7,6 +7,7 @@ import { Route, Switch, Router as WouterRouter, useLocation, Link } from 'wouter
 import { Home as HomeIcon } from 'lucide-react';
 
 import { ModeProvider, useMode } from '@/contexts/ModeContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Navigation } from '@/components/layout';
 import Home from '@/pages/home';
 import Onboarding from '@/pages/onboarding';
@@ -16,6 +17,8 @@ import Family from '@/pages/family';
 import Guardian from '@/pages/guardian';
 import Memory from '@/pages/memory';
 import Companion from '@/pages/companion';
+import Duas from '@/pages/duas';
+import Recitation from '@/pages/recitation';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,7 +40,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <div className={`min-h-[100dvh] bg-background w-full${isPersonal ? ' personal-mode' : ''}`}>
         {!hideNav && <Navigation />}
 
-        {/* Persistent Home button for personal mode — always in the same corner */}
+        {/* Persistent Home button for personal mode */}
         {isPersonal && !hideNav && location !== '/' && (
           <Link href="/">
             <button
@@ -71,6 +74,8 @@ function Router() {
         <Route path="/memory" component={Memory} />
         <Route path="/guardian" component={Guardian} />
         <Route path="/companion" component={Companion} />
+        <Route path="/duas" component={Duas} />
+        <Route path="/recitation" component={Recitation} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
@@ -82,9 +87,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <ModeProvider>
-            <Router />
-          </ModeProvider>
+          <LanguageProvider>
+            <ModeProvider>
+              <Router />
+            </ModeProvider>
+          </LanguageProvider>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>
