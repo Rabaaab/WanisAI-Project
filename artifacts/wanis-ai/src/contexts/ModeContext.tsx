@@ -28,10 +28,13 @@ export function ModeProvider({ children }: { children: ReactNode }) {
 
   const setMode = (m: ExperienceMode) => {
     setModeState(m)
+    if (!profile) return
     // Persist optimistically — don't await, don't block UI
     upsertProfile
       .mutateAsync({
         data: {
+          name: profile.name ?? "",
+          consentGiven: profile.consentGiven ?? false,
           experienceMode: m,
         },
       })

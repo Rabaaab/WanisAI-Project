@@ -13,6 +13,9 @@ export const guardianProfilesTable = pgTable("guardian_profiles", {
   groupLeaderPhone: text("group_leader_phone").notNull(),
   medicalNotes: text("medical_notes"),
   emergencyNote: text("emergency_note"),
+  meetingPointName: text("meeting_point_name"),
+  meetingPointAddress: text("meeting_point_address"),
+  emergencyContactPhone: text("emergency_contact_phone"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

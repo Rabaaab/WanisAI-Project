@@ -421,6 +421,9 @@ export const GetGuardianProfileResponse = zod.object({
   "groupLeaderPhone": zod.string(),
   "medicalNotes": zod.string().nullish(),
   "emergencyNote": zod.string().nullish(),
+  "meetingPointName": zod.string().nullish(),
+  "meetingPointAddress": zod.string().nullish(),
+  "emergencyContactPhone": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -445,7 +448,10 @@ export const UpsertGuardianProfileBody = zod.object({
   "groupLeaderName": zod.string().min(1),
   "groupLeaderPhone": zod.string().min(1),
   "medicalNotes": zod.string().optional(),
-  "emergencyNote": zod.string().optional()
+  "emergencyNote": zod.string().optional(),
+  "meetingPointName": zod.string().optional(),
+  "meetingPointAddress": zod.string().optional(),
+  "emergencyContactPhone": zod.string().optional()
 })
 
 export const UpsertGuardianProfileResponse = zod.object({
@@ -459,6 +465,9 @@ export const UpsertGuardianProfileResponse = zod.object({
   "groupLeaderPhone": zod.string(),
   "medicalNotes": zod.string().nullish(),
   "emergencyNote": zod.string().nullish(),
+  "meetingPointName": zod.string().nullish(),
+  "meetingPointAddress": zod.string().nullish(),
+  "emergencyContactPhone": zod.string().nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })

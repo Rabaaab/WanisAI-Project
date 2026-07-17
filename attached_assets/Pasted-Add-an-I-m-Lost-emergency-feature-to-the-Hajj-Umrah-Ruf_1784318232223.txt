@@ -1,0 +1,26 @@
+Add an "I'm Lost" emergency feature to the Hajj/Umrah Rufqa section (artifacts/wanis-ai/src/pages/guardian.tsx).
+
+1. Add to the Rufqa setup form a new "Safe Meeting Point" section with two fields:
+
+meetingPointName (text) — e.g. "Hotel lobby", "Gate 79"
+meetingPointAddress (text) — full address or landmark description
+Add these two fields to the guardian profile database schema (lib/db/src/schema/guardian_profiles.ts), the Zod types (lib/api-zod/src/index.ts), and the guardian API route (artifacts/api-server/src/routes/guardian.ts).
+
+2. Add a large "I'm Lost" button on the Rufqa profile view page (only shown when a meeting point is saved). It should be prominent — full width, calm green color, large text.
+
+3. When tapped, show a full-screen emergency overlay with:
+
+A calm heading: "You are safe. Here is what to do."
+Their current GPS location obtained via navigator.geolocation
+A "Take me to [meeting point name]" button that opens Google Maps with the route: https://www.google.com/maps/dir/?api=1&destination=ENCODED_ADDRESS — if GPS is available use origin=LAT,LNG, otherwise just destination. Also offer a Waze link: https://waze.com/ul?q=ENCODED_ADDRESS&navigate=yes
+An "Alert my group leader" button that opens WhatsApp: https://wa.me/PHONE?text=I+need+help.+My+location:+https://maps.google.com/?q=LAT,LNG using the saved groupLeaderPhone. If GPS not yet ready, omit the coordinates and just say "I need help, please call me."
+An "Alert emergency contact" button — add an emergencyContactPhone field to the profile form and use the same WhatsApp link pattern
+A calm "Close" button to dismiss the overlay
+4. GPS handling:
+
+Request location when the overlay opens
+Show a subtle "Getting your location…" spinner while waiting
+If location is denied or unavailable, still show the map and WhatsApp buttons but without coordinates
+5. No external API keys required — use only navigator.geolocation, Google Maps deep links, Waze deep links, and wa.me WhatsApp links.
+
+Keep the existing Rufqa green palette (#2F6D4F). The overlay should feel calm and reassuring, not alarming — large text, simple layout, one action per button.

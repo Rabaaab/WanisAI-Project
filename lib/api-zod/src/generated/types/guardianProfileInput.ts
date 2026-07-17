@@ -21,4 +21,7 @@ export interface GuardianProfileInput {
   groupLeaderPhone: string;
   medicalNotes?: string;
   emergencyNote?: string;
+  meetingPointName?: string;
+  meetingPointAddress?: string;
+  emergencyContactPhone?: string;
 }

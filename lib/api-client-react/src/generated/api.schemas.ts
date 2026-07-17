@@ -173,6 +173,12 @@ export interface GuardianProfile {
   medicalNotes?: string | null;
   /** @nullable */
   emergencyNote?: string | null;
+  /** @nullable */
+  meetingPointName?: string | null;
+  /** @nullable */
+  meetingPointAddress?: string | null;
+  /** @nullable */
+  emergencyContactPhone?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -192,6 +198,9 @@ export interface GuardianProfileInput {
   groupLeaderPhone: string;
   medicalNotes?: string;
   emergencyNote?: string;
+  meetingPointName?: string;
+  meetingPointAddress?: string;
+  emergencyContactPhone?: string;
 }
 
 export interface MemoryPhoto {

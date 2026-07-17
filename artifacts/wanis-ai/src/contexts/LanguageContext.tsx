@@ -285,6 +285,7 @@ interface LangContextValue {
   lang: Language
   setLang: (l: Language) => void
   dir: "ltr" | "rtl"
+  isRTL: boolean
   t: (key: string) => string
 }
 
@@ -319,7 +320,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     translations[lang][key] ?? translations["en"][key] ?? key
 
   return (
-    <LangContext.Provider value={{ lang, setLang, dir, t }}>
+    <LangContext.Provider value={{ lang, setLang, dir, isRTL: dir === "rtl", t }}>
       {children}
     </LangContext.Provider>
   )

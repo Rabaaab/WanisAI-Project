@@ -958,6 +958,12 @@ components:
           type: ["string", "null"]
         emergencyNote:
           type: ["string", "null"]
+        meetingPointName:
+          type: ["string", "null"]
+        meetingPointAddress:
+          type: ["string", "null"]
+        emergencyContactPhone:
+          type: ["string", "null"]
         createdAt:
           type: string
           format: date-time
@@ -999,6 +1005,12 @@ components:
         medicalNotes:
           type: string
         emergencyNote:
+          type: string
+        meetingPointName:
+          type: string
+        meetingPointAddress:
+          type: string
+        emergencyContactPhone:
           type: string
       required:
         - pilgrimName

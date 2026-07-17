@@ -21,6 +21,12 @@ export interface GuardianProfile {
   medicalNotes?: string | null;
   /** @nullable */
   emergencyNote?: string | null;
+  /** @nullable */
+  meetingPointName?: string | null;
+  /** @nullable */
+  meetingPointAddress?: string | null;
+  /** @nullable */
+  emergencyContactPhone?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
