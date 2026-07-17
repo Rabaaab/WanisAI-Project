@@ -154,12 +154,14 @@ router.post(
       return;
     }
 
+    const defaultSystem =
+      "You are Wanis — a warm, caring daily companion. You are here simply to talk and listen. You ask gentle, open questions, share a kind word, and keep people company. You never evaluate, score, or monitor anyone's health. You never diagnose or give medical advice. Respond in short, warm sentences. Speak like a caring friend who has time to listen.";
+
     try {
       const stream = anthropic.messages.stream({
         model: "claude-sonnet-4-6",
         max_tokens: 8192,
-        system:
-          "You are Wanis — a warm, caring daily companion. You are here simply to talk and listen. You ask gentle, open questions, share a kind word, and keep people company. You never evaluate, score, or monitor anyone's health. You never diagnose or give medical advice. Respond in short, warm sentences. Speak like a caring friend who has time to listen.",
+        system: parsed.data.systemPrompt ?? defaultSystem,
         messages: chatMessages,
       });
 

@@ -19,6 +19,7 @@ import Memory from '@/pages/memory';
 import Companion from '@/pages/companion';
 import Duas from '@/pages/duas';
 import Recitation from '@/pages/recitation';
+import Together from '@/pages/together';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +71,7 @@ function Router() {
         <Route path="/companion" component={Companion} />
         <Route path="/duas" component={Duas} />
         <Route path="/recitation" component={Recitation} />
+        <Route path="/together" component={Together} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

@@ -21,6 +21,19 @@ export const UserProfileExperienceMode = {
   family: 'family',
 } as const;
 
+/**
+ * @nullable
+ */
+export type UserProfileReminiscenceMode = typeof UserProfileReminiscenceMode[keyof typeof UserProfileReminiscenceMode] | null;
+
+
+export const UserProfileReminiscenceMode = {
+  music: 'music',
+  nasheed: 'nasheed',
+  voice: 'voice',
+  null: 'null',
+} as const;
+
 export interface UserProfile {
   id: number;
   name: string;
@@ -33,6 +46,8 @@ export interface UserProfile {
   consentNotes?: string | null;
   guardianModeEnabled: boolean;
   experienceMode: UserProfileExperienceMode;
+  /** @nullable */
+  reminiscenceMode?: UserProfileReminiscenceMode;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +60,15 @@ export const UserProfileInputExperienceMode = {
   family: 'family',
 } as const;
 
+export type UserProfileInputReminiscenceMode = typeof UserProfileInputReminiscenceMode[keyof typeof UserProfileInputReminiscenceMode];
+
+
+export const UserProfileInputReminiscenceMode = {
+  music: 'music',
+  nasheed: 'nasheed',
+  voice: 'voice',
+} as const;
+
 export interface UserProfileInput {
   /** @minLength 1 */
   name: string;
@@ -54,6 +78,7 @@ export interface UserProfileInput {
   consentNotes?: string;
   guardianModeEnabled?: boolean;
   experienceMode?: UserProfileInputExperienceMode;
+  reminiscenceMode?: UserProfileInputReminiscenceMode;
 }
 
 export interface FamilyMember {
@@ -243,6 +268,24 @@ export interface AnthropicConversationInput {
 
 export interface AnthropicMessageInput {
   content: string;
+  systemPrompt?: string;
+}
+
+export interface TogetherAudio {
+  id: number;
+  title: string;
+  audioUrl: string;
+  uploaderName: string;
+  createdAt: string;
+}
+
+export interface TogetherAudioInput {
+  /** @minLength 1 */
+  title: string;
+  /** @minLength 1 */
+  audioUrl: string;
+  /** @minLength 1 */
+  uploaderName: string;
 }
 
 export interface AnthropicConversationWithMessages {

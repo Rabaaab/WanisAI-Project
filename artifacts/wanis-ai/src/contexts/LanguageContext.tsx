@@ -16,6 +16,9 @@ const translations: Record<Language, Record<string, string>> = {
     settings: "Settings",
     duas: "Duas",
     recitation: "Recitation",
+    together: "Together",
+    together_desc: "Gentle moments of remembering",
+    setting_up_together: "Gentle moments of remembering",
 
     // Settings sheet
     experience: "Experience",

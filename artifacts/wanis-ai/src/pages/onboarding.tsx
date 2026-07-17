@@ -5,12 +5,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { motion, AnimatePresence } from "framer-motion"
-import { HeartPulse, Check, ArrowRight, ShieldAlert, User, Users } from "lucide-react"
+import { HeartPulse, Check, ArrowRight, ShieldAlert, User, Users, Music } from "lucide-react"
 import type { ExperienceMode } from "@/contexts/ModeContext"
 import { PhotoUploader } from "@/components/PhotoUploader"
 import { useLang } from "@/contexts/LanguageContext"
 
-const TOTAL_STEPS = 4
+type ReminiscenceMode = "music" | "nasheed" | "voice"
 
 export default function Onboarding() {
   const [_, setLocation] = useLocation()
@@ -22,6 +22,10 @@ export default function Onboarding() {
   const [dob, setDob] = useState("")
   const [photoUrl, setPhotoUrl] = useState("")
   const [experienceMode, setExperienceMode] = useState<ExperienceMode>("family")
+  const [reminiscenceMode, setReminiscenceMode] = useState<ReminiscenceMode | null>(null)
+
+  // Total steps depends on mode: family gets a music step, personal doesn't
+  const totalSteps = experienceMode === "family" ? 5 : 4
 
   const handleComplete = async () => {
     try {
@@ -34,6 +38,7 @@ export default function Onboarding() {
           consentNotes: "Given during onboarding flow",
           guardianModeEnabled: false,
           experienceMode,
+          ...(reminiscenceMode ? { reminiscenceMode } : {}),
         },
       })
       setLocation("/")
@@ -42,13 +47,20 @@ export default function Onboarding() {
     }
   }
 
+  // Step after consent: family → step 4 (music), personal → step 4 (all set)
+  const afterConsent = () => setStep(4)
+  // Step after music: step 5 (all set)
+  const afterMusic = () => setStep(5)
+  // "All Set" step number
+  const allSetStep = experienceMode === "family" ? 5 : 4
+
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md space-y-8">
         {/* Step indicators */}
         <div className="flex justify-center mb-8">
           <div className="flex gap-2">
-            {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((i) => (
+            {Array.from({ length: totalSteps }, (_, i) => i + 1).map((i) => (
               <div
                 key={i}
                 className={`h-2 rounded-full transition-all duration-500 ${
@@ -121,7 +133,7 @@ export default function Onboarding() {
             </motion.div>
           )}
 
-          {/* Step 2: Who will use this device? */}
+          {/* Step 2: Who will use this? */}
           {step === 2 && (
             <motion.div
               key="step2"
@@ -259,7 +271,7 @@ export default function Onboarding() {
                 <Button
                   size="lg"
                   className="w-full h-14 rounded-xl text-lg bg-accent text-accent-foreground hover:bg-accent/90"
-                  onClick={() => setStep(4)}
+                  onClick={afterConsent}
                 >
                   I Understand
                 </Button>
@@ -267,10 +279,90 @@ export default function Onboarding() {
             </motion.div>
           )}
 
-          {/* Step 4: All set */}
-          {step === 4 && (
+          {/* Step 4: Music & Memories (family mode only) */}
+          {step === 4 && experienceMode === "family" && (
             <motion.div
-              key="step4"
+              key="step4-music"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-8"
+            >
+              <div className="text-center space-y-3">
+                <Music className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h1 className="text-3xl font-serif font-bold text-foreground">
+                  Music & memories
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  When Wanis plays something familiar, what style fits best?
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    value: "music" as ReminiscenceMode,
+                    label: "Songs & music",
+                    desc: "Family uploads meaningful songs and melodies",
+                  },
+                  {
+                    value: "nasheed" as ReminiscenceMode,
+                    label: "Nasheeds",
+                    desc: "Vocal-only, no instruments",
+                  },
+                  {
+                    value: "voice" as ReminiscenceMode,
+                    label: "Voice & stories only",
+                    desc: "Family recordings, told memories, no music",
+                  },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setReminiscenceMode(opt.value)}
+                    className={`w-full rounded-2xl p-5 text-left border-2 transition-all flex items-start gap-4 ${
+                      reminiscenceMode === opt.value
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-white hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="flex-1 space-y-0.5">
+                      <p className="text-lg font-serif font-semibold text-foreground">
+                        {opt.label}
+                      </p>
+                      <p className="text-sm text-muted-foreground">{opt.desc}</p>
+                    </div>
+                    {reminiscenceMode === opt.value && (
+                      <Check className="w-5 h-5 text-primary shrink-0 mt-1" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full h-14 rounded-xl text-lg bg-transparent"
+                  onClick={() => setStep(3)}
+                >
+                  Back
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-full h-14 rounded-xl text-lg"
+                  onClick={afterMusic}
+                >
+                  {reminiscenceMode ? "Continue" : "Skip for now"} <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* All Set step */}
+          {step === allSetStep && (
+            <motion.div
+              key="step-allset"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               className="space-y-8 text-center"

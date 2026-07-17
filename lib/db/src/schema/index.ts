@@ -6,3 +6,4 @@ export * from "./guardian_profiles";
 export * from "./memory_photos";
 export * from "./conversations";
 export * from "./messages";
+export * from "./together_audio";

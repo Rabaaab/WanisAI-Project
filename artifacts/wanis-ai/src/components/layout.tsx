@@ -19,6 +19,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/guardian": "Rufqa",
   "/duas": "Duas",
   "/recitation": "Recitation",
+  "/together": "Together",
 }
 
 function getCurrentTitle(location: string) {

@@ -8,6 +8,7 @@ import checkInsRouter from "./check-ins";
 import guardianRouter from "./guardian";
 import memoryRouter from "./memory";
 import anthropicRouter from "./anthropic";
+import togetherRouter from "./together";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(checkInsRouter);
 router.use(guardianRouter);
 router.use(memoryRouter);
 router.use(anthropicRouter);
+router.use(togetherRouter);
 
 export default router;

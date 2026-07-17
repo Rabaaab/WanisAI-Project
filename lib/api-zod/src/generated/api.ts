@@ -78,6 +78,7 @@ export const GetProfileResponse = zod.object({
   "consentNotes": zod.string().nullish(),
   "guardianModeEnabled": zod.boolean(),
   "experienceMode": zod.enum(['personal', 'family']),
+  "reminiscenceMode": zod.enum(['music', 'nasheed', 'voice', 'null']).nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -96,7 +97,8 @@ export const UpsertProfileBody = zod.object({
   "consentGiven": zod.boolean(),
   "consentNotes": zod.string().optional(),
   "guardianModeEnabled": zod.boolean().optional(),
-  "experienceMode": zod.enum(['personal', 'family']).optional()
+  "experienceMode": zod.enum(['personal', 'family']).optional(),
+  "reminiscenceMode": zod.enum(['music', 'nasheed', 'voice']).optional()
 })
 
 export const UpsertProfileResponse = zod.object({
@@ -108,6 +110,7 @@ export const UpsertProfileResponse = zod.object({
   "consentNotes": zod.string().nullish(),
   "guardianModeEnabled": zod.boolean(),
   "experienceMode": zod.enum(['personal', 'family']),
+  "reminiscenceMode": zod.enum(['music', 'nasheed', 'voice', 'null']).nullish(),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -523,6 +526,52 @@ export const DeleteMemoryPhotoResponse = zod.void()
 
 
 /**
+ * @summary List all together audio clips
+ */
+export const ListTogetherAudioResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "audioUrl": zod.string(),
+  "uploaderName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListTogetherAudioResponse = zod.array(ListTogetherAudioResponseItem)
+
+
+/**
+ * @summary Add a together audio clip
+ */
+
+
+
+
+
+export const CreateTogetherAudioBody = zod.object({
+  "title": zod.string().min(1),
+  "audioUrl": zod.string().min(1),
+  "uploaderName": zod.string().min(1)
+})
+
+export const CreateTogetherAudioResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "audioUrl": zod.string(),
+  "uploaderName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a together audio clip
+ */
+export const DeleteTogetherAudioParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteTogetherAudioResponse = zod.void()
+
+
+/**
  * @summary List all conversations
  */
 export const ListAnthropicConversationsResponseItem = zod.object({
@@ -603,7 +652,8 @@ export const SendAnthropicMessageParams = zod.object({
 })
 
 export const SendAnthropicMessageBody = zod.object({
-  "content": zod.string()
+  "content": zod.string(),
+  "systemPrompt": zod.string().optional()
 })
 
 export const SendAnthropicMessageResponse = zod.unknown()

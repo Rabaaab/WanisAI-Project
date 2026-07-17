@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { UserProfileExperienceMode } from './userProfileExperienceMode';
+import type { UserProfileReminiscenceMode } from './userProfileReminiscenceMode';
 
 export interface UserProfile {
   id: number;
@@ -19,6 +20,8 @@ export interface UserProfile {
   consentNotes?: string | null;
   guardianModeEnabled: boolean;
   experienceMode: UserProfileExperienceMode;
+  /** @nullable */
+  reminiscenceMode?: UserProfileReminiscenceMode;
   createdAt: Date;
   updatedAt: Date;
 }

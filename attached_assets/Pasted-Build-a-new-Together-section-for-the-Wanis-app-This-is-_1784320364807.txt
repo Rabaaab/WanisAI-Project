@@ -1,0 +1,26 @@
+Build a new "Together" section for the Wanis app. This is a gentle reminiscence experience, not a game — no scores, no timers, no right/wrong answers anywhere.
+
+1. New page: artifacts/wanis-ai/src/pages/together.tsx
+Add a route /together in App.tsx and a tile on the home screen linking to it.
+The page has two cards:
+
+"Tell me about this" — pulls a random photo from the Memory Vault (existing /api/memory-photos endpoint) and displays it with the person's name hidden. Wanis asks: "Who is this, or what do you remember about this moment?" The user can respond by typing or using the microphone (same speech recognition pattern as Companion). Send the photo metadata (personName, relationship, notes) + the user's response to the Anthropic streaming endpoint (/api/anthropic/conversations/:id/messages) with a system prompt: "You are Wanis. A family member is looking at a photo of someone they love. They may remember clearly, partially, or not at all — all responses are equally welcome. If they remember something, reflect it warmly back. If they are unsure or silent, gently share what the family noted about this person without any sense of correcting them. Never say 'that's wrong' or imply failure. End by asking if they'd like to save what they just shared as a new memory note." After Wanis responds, show an optional button "Save what I shared" that creates a new Memory Vault entry via POST /api/memory-photos using the same photo's personName and relationship but appending the user's spoken memory as the notes field.
+"A familiar sound" — shown only if the family has uploaded audio files in Family Circle (see point 3 below). Plays a short clip and Wanis asks "does this feel familiar?" Same warm response pattern, same optional save prompt. If no audio uploaded yet, show a gentle message: "Ask your family to add a song or story in Family Circle."
+2. Add reminiscence content preference to onboarding (artifacts/wanis-ai/src/pages/onboarding.tsx)
+Add a new step (step 5, before "All Set") shown only when experienceMode is "family". Title: "Music & memories". Ask: "When Wanis plays something familiar, what style fits best?" Three options stored as reminiscenceMode in the user profile:
+
+music — "Songs & music" (family uploads meaningful songs)
+nasheed — "Nasheeds" (vocal-only, no instruments)
+voice — "Voice & stories only" (family recordings, told memories, no music)
+Add reminiscenceMode field (text, nullable) to lib/db/src/schema/user_profiles.ts, the Zod schema in lib/api-zod/src/index.ts, and the profile API route. Show the selected preference label on the Together page so the family knows which mode is active.
+3. Add audio upload to Family Circle (artifacts/wanis-ai/src/pages/family.tsx)
+Add a small "Add a sound" section at the bottom of the Family Circle page. Allow uploading an audio file (mp3, m4a, wav) using the existing object storage upload pattern from PhotoUploader but accepting audio/* file types. Store: title (text), audioUrl (object storage path), uploaderName (text). Add a new DB table together_audio with fields: id, title, audioUrl, uploaderName, createdAt. Add CRUD endpoints in a new route file artifacts/api-server/src/routes/together.ts and register it in artifacts/api-server/src/routes/index.ts. On the Together page, fetch audio via GET /api/together-audio and pick one at random to play using an HTML <audio> element.
+
+4. Keep Recitation Companion (/recitation) and Duas (/duas) completely separate — they are unaffected by the reminiscenceMode preference and always available regardless of setting.
+
+5. Framing rules across the entire Together section:
+
+Never use the word "game", "score", "correct", "wrong", "try again"
+All response buttons say things like "Save this memory" not "Submit answer"
+If the person says nothing or "I don't know", Wanis responds warmly, not with encouragement to try harder
+No countdown, no progress bar, no points

@@ -42,6 +42,8 @@ import type {
   Routine,
   RoutineInput,
   RoutineUpdate,
+  TogetherAudio,
+  TogetherAudioInput,
   UploadUrlRequest,
   UploadUrlResponse,
   UserProfile,
@@ -2071,6 +2073,225 @@ export const useDeleteMemoryPhoto = <TError = ErrorType<ApiError>,
         TContext
       > => {
       return useMutation(getDeleteMemoryPhotoMutationOptions(options));
+    }
+
+export const getListTogetherAudioUrl = () => {
+
+
+
+
+  return `/api/together-audio`
+}
+
+/**
+ * @summary List all together audio clips
+ */
+export const listTogetherAudio = async ( options?: RequestInit): Promise<TogetherAudio[]> => {
+
+  return customFetch<TogetherAudio[]>(getListTogetherAudioUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListTogetherAudioQueryKey = () => {
+    return [
+    `/api/together-audio`
+    ] as const;
+    }
+
+
+export const getListTogetherAudioQueryOptions = <TData = Awaited<ReturnType<typeof listTogetherAudio>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTogetherAudio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTogetherAudioQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTogetherAudio>>> = ({ signal }) => listTogetherAudio({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTogetherAudio>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListTogetherAudioQueryResult = NonNullable<Awaited<ReturnType<typeof listTogetherAudio>>>
+export type ListTogetherAudioQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all together audio clips
+ */
+
+export function useListTogetherAudio<TData = Awaited<ReturnType<typeof listTogetherAudio>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTogetherAudio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListTogetherAudioQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateTogetherAudioUrl = () => {
+
+
+
+
+  return `/api/together-audio`
+}
+
+/**
+ * @summary Add a together audio clip
+ */
+export const createTogetherAudio = async (togetherAudioInput: TogetherAudioInput, options?: RequestInit): Promise<TogetherAudio> => {
+
+  return customFetch<TogetherAudio>(getCreateTogetherAudioUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(togetherAudioInput)
+  }
+);}
+
+
+
+
+
+export const getCreateTogetherAudioMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTogetherAudio>>, TError,{data: BodyType<TogetherAudioInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTogetherAudio>>, TError,{data: BodyType<TogetherAudioInput>}, TContext> => {
+
+const mutationKey = ['createTogetherAudio'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTogetherAudio>>, {data: BodyType<TogetherAudioInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createTogetherAudio(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTogetherAudioMutationResult = NonNullable<Awaited<ReturnType<typeof createTogetherAudio>>>
+    export type CreateTogetherAudioMutationBody = BodyType<TogetherAudioInput>
+    export type CreateTogetherAudioMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a together audio clip
+ */
+export const useCreateTogetherAudio = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTogetherAudio>>, TError,{data: BodyType<TogetherAudioInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createTogetherAudio>>,
+        TError,
+        {data: BodyType<TogetherAudioInput>},
+        TContext
+      > => {
+      return useMutation(getCreateTogetherAudioMutationOptions(options));
+    }
+
+export const getDeleteTogetherAudioUrl = (id: number,) => {
+
+
+
+
+  return `/api/together-audio/${id}`
+}
+
+/**
+ * @summary Delete a together audio clip
+ */
+export const deleteTogetherAudio = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteTogetherAudioUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteTogetherAudioMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTogetherAudio>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTogetherAudio>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteTogetherAudio'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTogetherAudio>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteTogetherAudio(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteTogetherAudioMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTogetherAudio>>>
+
+    export type DeleteTogetherAudioMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a together audio clip
+ */
+export const useDeleteTogetherAudio = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTogetherAudio>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteTogetherAudio>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteTogetherAudioMutationOptions(options));
     }
 
 export const getListAnthropicConversationsUrl = () => {

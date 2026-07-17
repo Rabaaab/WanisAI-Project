@@ -543,6 +543,55 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /together-audio:
+    get:
+      operationId: listTogetherAudio
+      tags: [together]
+      summary: List all together audio clips
+      responses:
+        "200":
+          description: Together audio list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TogetherAudio"
+    post:
+      operationId: createTogetherAudio
+      tags: [together]
+      summary: Add a together audio clip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TogetherAudioInput"
+      responses:
+        "201":
+          description: Created together audio clip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TogetherAudio"
+
+  /together-audio/{id}:
+    delete:
+      operationId: deleteTogetherAudio
+      tags: [together]
+      summary: Delete a together audio clip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
   /anthropic/conversations:
     get:
       operationId: listAnthropicConversations
@@ -699,6 +748,9 @@ components:
         experienceMode:
           type: string
           enum: [personal, family]
+        reminiscenceMode:
+          type: ["string", "null"]
+          enum: [music, nasheed, voice, "null"]
         createdAt:
           type: string
           format: date-time
@@ -733,6 +785,9 @@ components:
         experienceMode:
           type: string
           enum: [personal, family]
+        reminiscenceMode:
+          type: string
+          enum: [music, nasheed, voice]
       required:
         - name
         - consentGiven
@@ -1110,8 +1165,48 @@ components:
       properties:
         content:
           type: string
+        systemPrompt:
+          type: string
       required:
         - content
+
+    TogetherAudio:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        audioUrl:
+          type: string
+        uploaderName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - audioUrl
+        - uploaderName
+        - createdAt
+
+    TogetherAudioInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        audioUrl:
+          type: string
+          minLength: 1
+        uploaderName:
+          type: string
+          minLength: 1
+      required:
+        - title
+        - audioUrl
+        - uploaderName
 
     AnthropicConversationWithMessages:
       type: object

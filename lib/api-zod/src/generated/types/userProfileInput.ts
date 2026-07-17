@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { UserProfileInputExperienceMode } from './userProfileInputExperienceMode';
+import type { UserProfileInputReminiscenceMode } from './userProfileInputReminiscenceMode';
 
 export interface UserProfileInput {
   /** @minLength 1 */
@@ -16,4 +17,5 @@ export interface UserProfileInput {
   consentNotes?: string;
   guardianModeEnabled?: boolean;
   experienceMode?: UserProfileInputExperienceMode;
+  reminiscenceMode?: UserProfileInputReminiscenceMode;
 }

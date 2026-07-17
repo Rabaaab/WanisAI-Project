@@ -225,7 +225,41 @@ function getTiles(t: (k: string) => string) {
       accent: "hsl(45 66% 47%)",
       bgFrom: "hsl(45 66% 47% / 0.06)",
     },
+    {
+      href: "/together",
+      labelKey: "together",
+      descKey: "together_desc",
+      illustration: IllustrationTogether,
+      accent: "hsl(330 40% 60%)",
+      bgFrom: "hsl(330 40% 60% / 0.06)",
+    },
   ]
+}
+
+function IllustrationTogether() {
+  return (
+    <svg viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+      <rect width="200" height="140" rx="16" fill="hsl(330 40% 60% / 0.08)" />
+      {/* Photo frame */}
+      <rect x="30" y="28" width="60" height="76" rx="10" fill="hsl(40 43% 92%)" stroke="hsl(330 40% 60%)" strokeWidth="1.5" />
+      <rect x="38" y="36" width="44" height="44" rx="6" fill="hsl(330 40% 60% / 0.15)" />
+      <circle cx="60" cy="54" r="12" fill="hsl(330 40% 60% / 0.3)" stroke="hsl(330 40% 60%)" strokeWidth="1" />
+      <ellipse cx="60" cy="70" rx="10" ry="7" fill="hsl(330 40% 60% / 0.2)" stroke="hsl(330 40% 60%)" strokeWidth="1" />
+      {/* Label lines */}
+      <rect x="38" y="86" width="30" height="4" rx="2" fill="hsl(330 40% 60% / 0.3)" />
+      <rect x="38" y="94" width="20" height="3" rx="1.5" fill="hsl(330 40% 60% / 0.2)" />
+      {/* Wanis character */}
+      <circle cx="138" cy="64" r="20" fill="hsl(40 43% 92%)" stroke="hsl(210 32% 52%)" strokeWidth="1.5" />
+      <circle cx="132" cy="61" r="3" fill="hsl(209 30% 24%)" />
+      <circle cx="144" cy="61" r="3" fill="hsl(209 30% 24%)" />
+      <path d="M131 70 Q138 76 145 70" stroke="hsl(209 30% 24%)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <ellipse cx="138" cy="92" rx="12" ry="16" fill="hsl(40 43% 92%)" stroke="hsl(210 32% 52%)" strokeWidth="1.5" />
+      {/* Heart */}
+      <path d="M100 60 C100 55 94 50 94 56 C94 62 100 68 100 68 C100 68 106 62 106 56 C106 50 100 55 100 60Z" fill="hsl(330 40% 60%)" opacity="0.7" />
+      {/* Lines connecting */}
+      <line x1="90" y1="64" x2="114" y2="64" stroke="hsl(330 40% 60%)" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.5" />
+    </svg>
+  )
 }
 
 // ── Home page ────────────────────────────────────────────────────────────────

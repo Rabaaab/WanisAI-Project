@@ -6,7 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface AnthropicMessageInput {
-  content: string;
-  systemPrompt?: string;
+export interface TogetherAudioInput {
+  /** @minLength 1 */
+  title: string;
+  /** @minLength 1 */
+  audioUrl: string;
+  /** @minLength 1 */
+  uploaderName: string;
 }

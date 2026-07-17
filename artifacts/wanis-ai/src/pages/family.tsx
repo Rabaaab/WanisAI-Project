@@ -1,8 +1,11 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import {
   useListFamilyMembers,
   useCreateFamilyMember,
   useDeleteFamilyMember,
+  useListTogetherAudio,
+  useCreateTogetherAudio,
+  useDeleteTogetherAudio,
 } from "@workspace/api-client-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,11 +17,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Heart, ImagePlus, Phone, Plus, Shield, Trash2, User } from "lucide-react"
+import { Heart, Music, Phone, Plus, Shield, Trash2, Upload, User } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { motion } from "framer-motion"
 import { PhotoUploader, photoSrc } from "@/components/PhotoUploader"
+import { useUpload } from "@workspace/object-storage-web"
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -232,6 +236,9 @@ export default function Family() {
         </Card>
       )}
 
+      {/* ── Sounds & Stories section ── */}
+      <SoundsSection />
+
       {/* Mobile fab */}
       <div className="md:hidden fixed bottom-[100px] right-6 z-50">
         <Button
@@ -243,5 +250,185 @@ export default function Family() {
         </Button>
       </div>
     </motion.div>
+  )
+}
+
+// ── Sounds & Stories section ───────────────────────────────────────────────────
+
+function SoundsSection() {
+  const { data: clips, refetch: refetchClips } = useListTogetherAudio()
+  const createClip = useCreateTogetherAudio()
+  const deleteClip = useDeleteTogetherAudio()
+
+  const [isOpen, setIsOpen] = useState(false)
+  const [title, setTitle] = useState("")
+  const [uploaderName, setUploaderName] = useState("")
+  const [audioUrl, setAudioUrl] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const { uploadFile, isUploading, error: uploadError } = useUpload({
+    onSuccess: (res) => {
+      setAudioUrl(res.objectPath)
+      setUploading(false)
+    },
+  })
+
+  async function handleAudioFile(file: File) {
+    if (!file.type.startsWith("audio/")) return
+    setUploading(true)
+    await uploadFile(file)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!title.trim() || !uploaderName.trim() || !audioUrl) return
+    try {
+      await createClip.mutateAsync({ data: { title, uploaderName, audioUrl } })
+      setTitle("")
+      setUploaderName("")
+      setAudioUrl("")
+      setIsOpen(false)
+      refetchClips()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  async function handleDelete(id: number) {
+    if (!confirm("Remove this audio clip?")) return
+    await deleteClip.mutateAsync({ id })
+    refetchClips()
+  }
+
+  return (
+    <div className="space-y-4 pt-4 border-t border-border">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-serif font-bold text-foreground flex items-center gap-2">
+            <Music className="w-6 h-6 text-accent" /> Sounds &amp; Stories
+          </h2>
+          <p className="text-muted-foreground mt-0.5 text-sm">
+            Upload meaningful songs, nasheeds, or voice recordings for the Together experience.
+          </p>
+        </div>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="gap-2 hidden md:flex">
+              <Upload className="w-4 h-4" /> Add a sound
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[420px] bg-background border-none rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-serif">Add a sound or story</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input
+                  required
+                  placeholder="e.g. Baba's favourite nasheed"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Your name</Label>
+                <Input
+                  required
+                  placeholder="e.g. Fatima"
+                  value={uploaderName}
+                  onChange={(e) => setUploaderName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Audio file</Label>
+                {audioUrl ? (
+                  <div className="flex items-center gap-2 p-3 bg-card rounded-xl text-sm">
+                    <Music className="w-4 h-4 text-accent shrink-0" />
+                    <span className="flex-1 truncate text-foreground">File uploaded ✓</span>
+                    <button type="button" onClick={() => setAudioUrl("")} className="text-muted-foreground hover:text-destructive text-xs">
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => inputRef.current?.click()}
+                    className="w-full h-24 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-accent/50 hover:bg-card transition-colors"
+                    disabled={uploading || isUploading}
+                  >
+                    {uploading || isUploading ? (
+                      <span className="text-sm">Uploading…</span>
+                    ) : (
+                      <>
+                        <Upload className="w-6 h-6" />
+                        <span className="text-sm">Tap to choose an audio file</span>
+                        <span className="text-xs opacity-60">MP3, M4A, WAV</span>
+                      </>
+                    )}
+                  </button>
+                )}
+                {uploadError && (
+                  <p className="text-xs text-destructive">{uploadError.message}</p>
+                )}
+                <input
+                  ref={inputRef}
+                  type="file"
+                  accept="audio/*"
+                  className="sr-only"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAudioFile(f) }}
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full h-12 text-lg mt-2"
+                disabled={!title.trim() || !uploaderName.trim() || !audioUrl || createClip.isPending}
+              >
+                Save
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Mobile button */}
+      <Button variant="outline" className="w-full md:hidden gap-2" onClick={() => setIsOpen(true)}>
+        <Upload className="w-4 h-4" /> Add a sound or story
+      </Button>
+
+      {clips && clips.length > 0 && (
+        <div className="space-y-2">
+          {clips.map((clip) => (
+            <div
+              key={clip.id}
+              className="flex items-center gap-3 bg-white rounded-xl p-4 shadow-sm"
+            >
+              <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center shrink-0">
+                <Music className="w-5 h-5 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-foreground truncate">{clip.title}</p>
+                <p className="text-sm text-muted-foreground">Added by {clip.uploaderName}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
+                onClick={() => handleDelete(clip.id)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {clips && clips.length === 0 && (
+        <p className="text-sm text-muted-foreground text-center py-2">
+          No sounds uploaded yet. Add one above to use it in Together.
+        </p>
+      )}
+    </div>
   )
 }
