@@ -9,19 +9,38 @@ import { SettingsSheet } from "@/components/SettingsSheet"
 
 const RUFQA_COLOR = "#2F6D4F"
 
+// Page title map for the mobile top bar
+const PAGE_TITLES: Record<string, string> = {
+  "/": "Home",
+  "/check-in": "Check-in",
+  "/family": "Family",
+  "/memory": "Memory",
+  "/companion": "Talk",
+  "/guardian": "Rufqa",
+  "/duas": "Duas",
+  "/recitation": "Recitation",
+}
+
+function getCurrentTitle(location: string) {
+  if (PAGE_TITLES[location]) return PAGE_TITLES[location]
+  // match /check-in/:id
+  if (location.startsWith("/check-in/")) return "Check-in"
+  return "Wanis"
+}
+
 const allNavItems = [
-  { nameKey: "home", href: "/", icon: Home },
-  { nameKey: "check_in", href: "/check-in", icon: HeartPulse },
-  { nameKey: "family", href: "/family", icon: Users },
-  { nameKey: "memory", href: "/memory", icon: BookOpen },
-  { nameKey: "talk", href: "/companion", icon: MessageCircle },
-  { nameKey: "rufqa", href: "/guardian", icon: KaabaIcon, rufqa: true },
+  { nameKey: "home",     shortLabel: "Home",     href: "/",         icon: Home },
+  { nameKey: "check_in", shortLabel: "Check-in", href: "/check-in", icon: HeartPulse },
+  { nameKey: "family",   shortLabel: "Family",   href: "/family",   icon: Users },
+  { nameKey: "memory",   shortLabel: "Memory",   href: "/memory",   icon: BookOpen },
+  { nameKey: "talk",     shortLabel: "Talk",     href: "/companion", icon: MessageCircle },
+  { nameKey: "rufqa",    shortLabel: "Rufqa",    href: "/guardian", icon: KaabaIcon, rufqa: true },
 ] as const
 
 const personalNavItems = [
-  { nameKey: "home", href: "/", icon: Home },
-  { nameKey: "talk", href: "/companion", icon: MessageCircle },
-  { nameKey: "check_in", href: "/check-in", icon: HeartPulse },
+  { nameKey: "home",     shortLabel: "Home",     href: "/",         icon: Home },
+  { nameKey: "talk",     shortLabel: "Talk",     href: "/companion", icon: MessageCircle },
+  { nameKey: "check_in", shortLabel: "Check-in", href: "/check-in", icon: HeartPulse },
 ] as const
 
 function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
@@ -71,15 +90,47 @@ function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   )
 }
 
+// ── Mobile Top Bar (family mode only) ─────────────────────────────────────────
+function MobileTopBar() {
+  const [location] = useLocation()
+  const title = getCurrentTitle(location)
+  const isRufqa = location === "/guardian" || location.startsWith("/guardian")
+
+  return (
+    <div
+      className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-background border-b border-border
+                 flex items-center justify-between px-4"
+    >
+      {/* Left: brand name or Rufqa accent */}
+      <span
+        className="text-lg font-serif font-bold"
+        style={isRufqa ? { color: RUFQA_COLOR } : undefined}
+      >
+        {title}
+      </span>
+
+      {/* Right: lang + settings */}
+      <div className="flex items-center gap-2">
+        <LanguageSwitcher compact />
+        <SettingsSheet triggerClassName="w-9 h-9 flex items-center justify-center rounded-full bg-card text-muted-foreground hover:text-foreground transition-colors">
+          <Settings className="w-4 h-4" />
+        </SettingsSheet>
+      </div>
+    </div>
+  )
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────────
 export function Navigation() {
   const [location] = useLocation()
   const { mode } = useMode()
   const { t } = useLang()
 
+  // ── Personal mode ─────────────────────────────────────────────────
   if (mode === "personal") {
     return (
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-safe">
-        <div className="flex justify-around items-center h-[80px]">
+        <div className="flex justify-around items-center h-[64px]">
           {personalNavItems.map((item) => {
             const isActive =
               location === item.href ||
@@ -89,26 +140,20 @@ export function Navigation() {
                 key={item.nameKey}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center justify-center flex-1 h-full gap-1.5 transition-colors relative",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors",
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <item.icon className={cn("w-7 h-7", isActive && "text-primary")} />
-                <span className="text-xs font-semibold tracking-wide">
-                  {t(item.nameKey)}
-                </span>
-                {isActive && (
-                  <span className="absolute top-2 w-2 h-2 rounded-full bg-primary" />
-                )}
+                <item.icon className="w-6 h-6" />
+                <span className="text-[11px] font-semibold">{item.shortLabel}</span>
               </Link>
             )
           })}
 
-          {/* Settings trigger in personal mode */}
-          <div className="flex flex-col items-center justify-center flex-1 h-full gap-1.5">
-            <SettingsSheet triggerClassName="flex flex-col items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors w-full py-2">
-              <Settings className="w-7 h-7" />
-              <span className="text-xs font-semibold tracking-wide">{t("settings")}</span>
+          <div className="flex flex-col items-center justify-center flex-1 h-full gap-1">
+            <SettingsSheet triggerClassName="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground transition-colors w-full py-1">
+              <Settings className="w-6 h-6" />
+              <span className="text-[11px] font-semibold">{t("settings")}</span>
             </SettingsSheet>
           </div>
         </div>
@@ -116,10 +161,18 @@ export function Navigation() {
     )
   }
 
+  // ── Family mode ───────────────────────────────────────────────────
   return (
     <>
-      {/* Mobile Bottom Tab Bar — family mode */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-[80px] bg-background border-t border-border z-50 px-1 pb-safe flex justify-around items-center">
+      {/* Mobile top bar */}
+      <MobileTopBar />
+
+      {/* Mobile Bottom Tab Bar */}
+      <div
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border
+                   flex justify-around items-center px-1 pb-safe"
+        style={{ height: 64 }}
+      >
         {allNavItems.map((item) => {
           const isActive =
             location === item.href ||
@@ -131,7 +184,7 @@ export function Navigation() {
               key={item.nameKey}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center w-full h-full min-h-[48px] gap-0.5 transition-colors relative",
+                "flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors",
                 isActive
                   ? isRufqa ? "" : "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -139,26 +192,18 @@ export function Navigation() {
               style={isRufqa && isActive ? { color: RUFQA_COLOR } : undefined}
             >
               <item.icon
-                className={cn("w-5 h-5", isRufqa ? "" : isActive ? "text-primary" : "")}
+                className="w-5 h-5 shrink-0"
                 style={isRufqa ? { color: RUFQA_COLOR } : undefined}
               />
-              <span className="text-[9px] font-medium leading-tight text-center px-0.5 truncate max-w-[52px]">
-                {t(item.nameKey)}
+              <span className="text-[10px] font-semibold leading-none">
+                {item.shortLabel}
               </span>
-              {isActive && (
-                <span
-                  className="absolute top-1 w-1.5 h-1.5 rounded-full"
-                  style={{
-                    background: isRufqa ? RUFQA_COLOR : "hsl(var(--primary))",
-                  }}
-                />
-              )}
             </Link>
           )
         })}
       </div>
 
-      {/* Desktop Sidebar — family mode */}
+      {/* Desktop Sidebar */}
       <div className="hidden md:flex w-64 flex-col fixed inset-y-0 left-0 bg-card border-r border-border z-50">
         <div className="p-6 pb-2">
           <h1 className="text-2xl font-serif font-bold text-foreground">Wanis</h1>

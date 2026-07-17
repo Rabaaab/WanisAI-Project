@@ -40,21 +40,15 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       <div className={`min-h-[100dvh] bg-background w-full${isPersonal ? ' personal-mode' : ''}`}>
         {!hideNav && <Navigation />}
 
-        {/* Persistent Home button for personal mode */}
-        {isPersonal && !hideNav && location !== '/' && (
-          <Link href="/">
-            <button
-              aria-label="Go Home"
-              className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-background border border-border rounded-2xl px-4 py-3 shadow-md min-h-[52px] text-foreground hover:bg-card transition-colors"
-              style={{ fontFamily: 'var(--app-font-sans)' }}
-            >
-              <HomeIcon className="w-5 h-5 text-primary shrink-0" />
-              <span className="text-sm font-semibold">Home</span>
-            </button>
-          </Link>
-        )}
-
-        <main className={!hideNav ? (isPersonal ? 'pb-[90px]' : 'md:pl-64') : ''}>
+        <main
+          className={
+            hideNav
+              ? ''
+              : isPersonal
+                ? 'pb-[64px]'
+                : 'pt-14 pb-[64px] md:pt-0 md:pb-0 md:pl-64'
+          }
+        >
           {children}
         </main>
       </div>
