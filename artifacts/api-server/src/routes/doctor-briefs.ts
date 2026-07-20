@@ -5,6 +5,8 @@ import { gemini } from "../lib/gemini";
 import crypto from "crypto";
 
 const router: IRouter = Router();
+type Medication = typeof medicationsTable.$inferSelect;
+type CheckIn = typeof checkInsTable.$inferSelect;
 
 // POST /api/doctor-briefs
 router.post("/doctor-briefs", async (req, res): Promise<void> => {
@@ -21,10 +23,10 @@ router.post("/doctor-briefs", async (req, res): Promise<void> => {
 
     // 2. Get active medications
     const medications = await db.select().from(medicationsTable);
-    const totalAcb = medications.reduce((sum, m) => sum + (m.acbScore || 0), 0);
+    const totalAcb = medications.reduce((sum: number, m: Medication) => sum + (m.acbScore || 0), 0);
 
     const medsSummary = medications
-      .map((m) => `- ${m.name} (${m.dosage}, ${m.frequency}) - ACB Burden: ${m.acbScore}`)
+      .map((m: Medication) => `- ${m.name} (${m.dosage}, ${m.frequency}) - ACB Burden: ${m.acbScore}`)
       .join("\n");
 
     const medFindingsPrompt = `Summarize these medication findings for a doctor's brief in plain language, focus on anticholinergic burden:
@@ -44,8 +46,8 @@ Provide a clear, brief explanation of which specific medications are contributin
       req.log.error({ e }, "Gemini med findings failed, using fallback summary");
       const isQuota = (e && ((e as any).status === 429 || (e as any).message?.toString().toLowerCase().includes('quota') || (e as any).message?.toString().toLowerCase().includes('rate limit')));
       if (isQuota) {
-        const contributing = medications.filter(m => (m.acbScore || 0) > 0);
-        const contribList = contributing.length > 0 ? contributing.map(m => `- ${m.name} (${m.dosage}, ${m.frequency}) — ACB ${m.acbScore}`).join('\n') : 'No medications with anticholinergic burden identified.';
+        const contributing = medications.filter((m: Medication) => (m.acbScore || 0) > 0);
+        const contribList = contributing.length > 0 ? contributing.map((m: Medication) => `- ${m.name} (${m.dosage}, ${m.frequency}) — ACB ${m.acbScore}`).join('\n') : 'No medications with anticholinergic burden identified.';
         medicationFindings = `Temporary service limits prevented a detailed AI-generated brief. Based on recorded medications (total ACB: ${totalAcb}):\n${contribList}\n\nIn general, medications with anticholinergic effects can increase risk for confusion and memory problems in older adults. Discuss these findings with a doctor — do not stop medications without medical advice.`;
       } else {
         throw e;
@@ -60,7 +62,7 @@ Provide a clear, brief explanation of which specific medications are contributin
       .limit(6);
 
     const checkInsText = checkIns
-      .map((c) => {
+      .map((c: CheckIn) => {
         const dateStr = c.createdAt instanceof Date
           ? c.createdAt.toDateString()
           : typeof c.createdAt === 'string'
@@ -85,7 +87,7 @@ Highlight any patterns, notable improvements, or warnings in mood/engagement. Ke
       req.log.error({ e }, "Gemini check-in summary failed, using fallback summary");
       const isQuota = (e && ((e as any).status === 429 || (e as any).message?.toString().toLowerCase().includes('quota') || (e as any).message?.toString().toLowerCase().includes('rate limit')));
       if (isQuota) {
-        const trends = checkIns.map(c => `- ${c.createdAt instanceof Date ? c.createdAt.toDateString() : String(c.createdAt)}: mood=${c.mood}, prompt=${c.prompt}` ).join('\n') || 'No check-ins logged.';
+        const trends = checkIns.map((c: CheckIn) => `- ${c.createdAt instanceof Date ? c.createdAt.toDateString() : String(c.createdAt)}: mood=${c.mood}, prompt=${c.prompt}` ).join('\n') || 'No check-ins logged.';
         checkInSummary = `Temporary service limits prevented a detailed AI summary. Recent check-ins:\n${trends}\n\nOverall: review the above patterns with a clinician if you notice worsening mood or disengagement.`;
       } else {
         throw e;

@@ -15,13 +15,14 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+type FamilyMember = typeof familyMembersTable.$inferSelect;
 
 router.get("/family-members/summary", async (_req, res): Promise<void> => {
   const members = await db.select().from(familyMembersTable);
   const summary = {
     totalMembers: members.length,
-    emergencyContacts: members.filter((m) => m.isEmergencyContact).length,
-    hasPhotos: members.filter((m) => m.photoUrl).length,
+    emergencyContacts: members.filter((m: FamilyMember) => m.isEmergencyContact).length,
+    hasPhotos: members.filter((m: FamilyMember) => m.photoUrl).length,
   };
   res.json(GetFamilyMembersSummaryResponse.parse(summary));
 });

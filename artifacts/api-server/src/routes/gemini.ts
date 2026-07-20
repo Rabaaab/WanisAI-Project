@@ -16,6 +16,9 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+type MemoryPhoto = typeof memoryPhotosTable.$inferSelect;
+type CheckIn = typeof checkInsTable.$inferSelect;
+type Message = typeof messagesTable.$inferSelect;
 
 router.get("/gemini/conversations", async (_req, res): Promise<void> => {
   const conversations = await db
@@ -171,8 +174,8 @@ router.post(
     }
 
     const name = profile?.name ?? "Friend";
-    const lovedPeople = memoryPhotos.map(p => `${p.personName} (${p.relationship})`).join(", ") || "None mentioned yet";
-    const recentMoods = lastCheckIns.map(c => c.mood).filter(Boolean).slice(0, 3).join(", ") || "Stable";
+    const lovedPeople = memoryPhotos.map((p: MemoryPhoto) => `${p.personName} (${p.relationship})`).join(", ") || "None mentioned yet";
+    const recentMoods = lastCheckIns.map((c: CheckIn) => c.mood).filter(Boolean).slice(0, 3).join(", ") || "Stable";
     const lastWeekSnippet = lastCheckIns[0]?.response ? lastCheckIns[0].response.slice(0, 200) : "Nothing shared yet";
     const suggestedAction = lastCheckIns[0]?.actionSuggested ?? "None";
     const pastConvoTopics = convoSummaries.join(", ") || "None yet";
@@ -202,7 +205,7 @@ Past conversation topics: ${pastConvoTopics}`;
       .where(eq(messagesTable.conversationId, params.data.id))
       .orderBy(asc(messagesTable.createdAt));
 
-    const chatMessages = history.map((m) => ({
+    const chatMessages = history.map((m: Message) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: [{ text: m.content }],
     }));

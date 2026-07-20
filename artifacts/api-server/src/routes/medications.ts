@@ -8,6 +8,7 @@ import fs from "fs";
 import path from "path";
 
 const router: IRouter = Router();
+type Medication = typeof medicationsTable.$inferSelect;
 
 // GET /api/medications
 router.get("/medications", async (req, res): Promise<void> => {
@@ -209,9 +210,9 @@ router.post("/medications/analyze", async (req, res): Promise<void> => {
       return;
     }
 
-    const totalAcb = meds.reduce((sum, m) => sum + m.acbScore, 0);
+    const totalAcb = meds.reduce((sum: number, m: Medication) => sum + m.acbScore, 0);
 
-    const medsList = meds.map(m => `- ${m.name} (ACB: ${m.acbScore})`).join("\n");
+    const medsList = meds.map((m: Medication) => `- ${m.name} (ACB: ${m.acbScore})`).join("\n");
 
     const prompt = `You are a cognitive health assistant. Analyze the following medication list for an older adult. 
 The total Anticholinergic Cognitive Burden (ACB) score is ${totalAcb}.
@@ -237,8 +238,8 @@ End the explanation with a calm suggestion to discuss this specific finding with
       req.log.error({ e }, "Gemini analyze call failed, falling back to template response");
       const isQuota = (e && ((e as any).status === 429 || (e as any).message?.toString().toLowerCase().includes('quota') || (e as any).message?.toString().toLowerCase().includes('rate limit')));
       if (isQuota) {
-        const contributing = meds.filter(m => m.acbScore && m.acbScore > 0);
-        const contribList = contributing.length > 0 ? contributing.map(m => `- ${m.name} (${m.dosage}, ${m.frequency}) — ACB ${m.acbScore}`).join('\n') : 'No medications with anticholinergic burden were identified.';
+        const contributing = meds.filter((m: Medication) => m.acbScore && m.acbScore > 0);
+        const contribList = contributing.length > 0 ? contributing.map((m: Medication) => `- ${m.name} (${m.dosage}, ${m.frequency}) — ACB ${m.acbScore}`).join('\n') : 'No medications with anticholinergic burden were identified.';
         const explanation = `I couldn't reach the external analysis service due to temporary service limits. Based on the medications we have recorded (total ACB score: ${totalAcb}):\n${contribList}\n\nIn plain terms: medications with anticholinergic properties can increase confusion and memory problems in some older adults. This list highlights medicines that may contribute to that burden. Please review these findings with a doctor — do NOT stop or change any medication without medical advice.`;
         res.json({ explanation });
         return;

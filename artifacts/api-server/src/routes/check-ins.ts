@@ -18,6 +18,9 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
+type CheckIn = typeof checkInsTable.$inferSelect;
+type Message = typeof messagesTable.$inferSelect;
+type MemoryPhoto = typeof memoryPhotosTable.$inferSelect;
 
 router.get("/check-ins/dashboard", async (_req, res): Promise<void> => {
   const checkIns = await db
@@ -28,10 +31,10 @@ router.get("/check-ins/dashboard", async (_req, res): Promise<void> => {
 
   const recentMoods = checkIns
     .slice(0, 4)
-    .map((c) => c.mood ?? "")
+    .map((c: CheckIn) => c.mood ?? "")
     .filter(Boolean);
 
-  const actionsCompleted = checkIns.filter((c) => c.actionCompleted).length;
+  const actionsCompleted = checkIns.filter((c: CheckIn) => c.actionCompleted).length;
   const lastCheckIn = checkIns[0];
   const lastCheckInDate = lastCheckIn?.createdAt?.toISOString() ?? null;
 
@@ -105,9 +108,9 @@ router.post("/check-ins/family-letter", async (req, res): Promise<void> => {
 
     const memoryPhotos = await db.select().from(memoryPhotosTable);
 
-    const checkInsContext = checkIns.map(c => `Prompt: ${c.prompt}, Response: ${c.response ?? "None"}, Mood: ${c.mood ?? "Unknown"}, Action Suggested: ${c.actionSuggested ?? "None"}, Completed: ${c.actionCompleted ? "Yes" : "No"}`).join("\n");
-    const messagesContext = lastMsgs.map(m => m.content).join("\n");
-    const photosContext = memoryPhotos.map(p => `${p.personName} (${p.relationship}): ${p.notes ?? ""}`).join("\n");
+    const checkInsContext = checkIns.map((c: CheckIn) => `Prompt: ${c.prompt}, Response: ${c.response ?? "None"}, Mood: ${c.mood ?? "Unknown"}, Action Suggested: ${c.actionSuggested ?? "None"}, Completed: ${c.actionCompleted ? "Yes" : "No"}`).join("\n");
+    const messagesContext = lastMsgs.map((m: Message) => m.content).join("\n");
+    const photosContext = memoryPhotos.map((p: MemoryPhoto) => `${p.personName} (${p.relationship}): ${p.notes ?? ""}`).join("\n");
 
     const promptText = `You are Wanis. Write a warm, human, one-paragraph letter to the family of ${name} summarizing how they have seemed this week. Mention one specific thing they talked about, whether they completed their suggested action, and one gentle thing worth the family knowing. Never use clinical language. Write in ${parsed.data.lang}.
     

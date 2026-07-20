@@ -26,7 +26,9 @@ if (!fs.existsSync(localStorageDir)) {
 // Local upload endpoint for PUT uploads
 router.put('/storage/uploads/local/:objectId', async (req: Request, res: Response) => {
   try {
-    const { objectId } = req.params;
+    const objectId = Array.isArray(req.params.objectId)
+      ? req.params.objectId.join('/')
+      : req.params.objectId;
     const destPath = path.join(localStorageDir, objectId);
     const writeStream = fs.createWriteStream(destPath);
     req.pipe(writeStream);
