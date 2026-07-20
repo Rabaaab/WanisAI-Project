@@ -8,6 +8,7 @@ export const routinesTable = pgTable("routines", {
   description: text("description"),
   time: text("time"),
   frequency: text("frequency").notNull().default("daily"),
+  appointmentDate: text("appointment_date"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

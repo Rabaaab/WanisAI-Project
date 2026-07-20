@@ -14,5 +14,7 @@ export interface Routine {
   /** @nullable */
   time?: string | null;
   frequency: string;
+  /** @nullable */
+  appointmentDate?: string | null;
   createdAt: Date;
 }

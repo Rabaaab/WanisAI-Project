@@ -1,47 +1,26 @@
-import { useState } from "react"
-import { useListMemoryPhotos, useCreateMemoryPhoto, useDeleteMemoryPhoto } from "@workspace/api-client-react"
+import { useListFamilyMembers, useDeleteFamilyMember } from "@workspace/api-client-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { ImagePlus, Trash2, Heart } from "lucide-react"
+import { ImagePlus, Trash2, Heart, Users } from "lucide-react"
 import { motion } from "framer-motion"
-import { PhotoUploader, photoSrc } from "@/components/PhotoUploader"
+import { photoSrc } from "@/components/PhotoUploader"
 import { useLang } from "@/contexts/LanguageContext"
+import { Link } from "wouter"
 
 export default function Memory() {
-  const { t } = useLang()
-  const { data: photos, isLoading, refetch } = useListMemoryPhotos()
-  const createPhoto = useCreateMemoryPhoto()
-  const deletePhoto = useDeleteMemoryPhoto()
+  const { t, lang } = useLang()
+  const { data: members, isLoading, refetch } = useListFamilyMembers()
+  const deleteMember = useDeleteFamilyMember()
 
-  const [isAddOpen, setIsAddOpen] = useState(false)
-  const [formData, setFormData] = useState({
-    personName: "",
-    relationship: "",
-    photoUrl: "",
-    notes: ""
-  })
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!formData.photoUrl) return
-    try {
-      await createPhoto.mutateAsync({ data: formData })
-      setIsAddOpen(false)
-      setFormData({ personName: "", relationship: "", photoUrl: "", notes: "" })
-      refetch()
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  // Only show members who have a photo (they are the meaningful "who is this" cards)
+  const photosWithPeople = Array.isArray(members)
+    ? members.filter((m) => m.photoUrl)
+    : []
 
   const handleDelete = async (id: number) => {
-    if (confirm(t("remove_memory"))) {
+    if (confirm("Remove this family member from Memory? This will also remove them from Family Circle.")) {
       try {
-        await deletePhoto.mutateAsync({ id })
+        await deleteMember.mutateAsync({ id })
         refetch()
       } catch (err) {
         console.error(err)
@@ -50,7 +29,7 @@ export default function Memory() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="p-6 md:p-10 max-w-5xl mx-auto space-y-8 pb-24 md:pb-10"
@@ -61,76 +40,62 @@ export default function Memory() {
             Who is this?
           </h1>
           <p className="text-lg text-muted-foreground mt-1">
-            Familiar faces and fond memories.
+            Familiar faces from your family circle.
           </p>
         </div>
 
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full md:w-auto h-12">
-              <ImagePlus className="w-5 h-5 me-2" /> {t("add_memory")}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[440px] bg-background border-none rounded-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-serif">{t("add_memory")}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label>{t("person_name")}</Label>
-                <Input required value={formData.personName} onChange={e => setFormData({...formData, personName: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("relationship")}</Label>
-                <Input required value={formData.relationship} onChange={e => setFormData({...formData, relationship: e.target.value})} placeholder="e.g. My Grandson" />
-              </div>
-              <PhotoUploader
-                label={t("photo")}
-                value={formData.photoUrl}
-                onChange={(path) => setFormData({ ...formData, photoUrl: path })}
-              />
-              <div className="space-y-2">
-                <Label>{t("a_small_note")}</Label>
-                <Textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="e.g. He loves playing soccer." />
-              </div>
-              <Button type="submit" className="w-full h-12 text-lg mt-4" disabled={createPhoto.isPending || !formData.photoUrl}>
-                {t("save_memory")}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {/* Direct to Family Circle for adding people */}
+        <Link href="/family">
+          <Button className="w-full md:w-auto h-12 gap-2">
+            <Users className="w-5 h-5" /> Manage in Family Circle
+          </Button>
+        </Link>
       </header>
+
+      {/* Info banner explaining the connection */}
+      <div className="bg-primary/6 border border-primary/15 rounded-2xl p-4 flex items-start gap-3">
+        <Heart className="w-5 h-5 text-primary shrink-0 mt-0.5 fill-current" />
+        <p className="text-sm text-foreground/80 leading-relaxed">
+          {lang === "ar"
+            ? "هذه الصور تأتي مباشرة من الأشخاص الذين تضيفهم إلى Family Circle. إذا أضفت أو عدلت صورة هناك، ستظهر هنا تلقائيًا."
+            : lang === "fr"
+              ? "Ces photos viennent directement de la liste que vous gérez dans Family Circle. Si vous ajoutez ou modifiez une photo là-bas, elle apparaîtra ici automatiquement."
+              : "These photos come directly from the people you add in Family Circle. If you add or update a photo there, it will appear here automatically."}
+        </p>
+      </div>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-pulse">
-          {[1,2].map(i => <div key={i} className="h-96 bg-card rounded-2xl" />)}
+          {[1, 2].map((i) => (
+            <div key={i} className="h-96 bg-card rounded-2xl" />
+          ))}
         </div>
-      ) : photos && photos.length > 0 ? (
+      ) : photosWithPeople.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {photos.map((photo) => (
-            <Card key={photo.id} className="bg-white border-none shadow-md overflow-hidden group">
+          {photosWithPeople.map((member) => (
+            <Card key={member.id} className="bg-white border-none shadow-md overflow-hidden group">
               <div className="h-64 sm:h-80 relative overflow-hidden bg-secondary">
                 <img
-                  src={photoSrc(photo.photoUrl) ?? photo.photoUrl}
-                  alt={photo.personName}
+                  src={photoSrc(member.photoUrl) ?? member.photoUrl ?? ""}
+                  alt={member.name}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(photo.id)} className="ml-auto">
-                    <Trash2 className="w-4 h-4 mr-2" /> Remove
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(member.id)}
+                    className="ml-auto"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Remove from Family Circle
                   </Button>
                 </div>
               </div>
               <CardContent className="p-6 text-center md:text-left">
-                <h3 className="text-3xl font-serif font-bold text-foreground">{photo.personName}</h3>
+                <h3 className="text-3xl font-serif font-bold text-foreground">{member.name}</h3>
                 <p className="text-xl text-primary font-medium mt-1 flex items-center justify-center md:justify-start gap-2">
-                  <Heart className="w-5 h-5 fill-current" /> {photo.relationship}
+                  <Heart className="w-5 h-5 fill-current" /> {member.relationship}
                 </p>
-                {photo.notes && (
-                  <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-                    "{photo.notes}"
-                  </p>
-                )}
               </CardContent>
             </Card>
           ))}
@@ -138,13 +103,15 @@ export default function Memory() {
       ) : (
         <Card className="bg-card border-dashed border-2 p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
           <ImagePlus className="w-16 h-16 text-muted-foreground mb-4 opacity-50" />
-          <h3 className="text-2xl font-serif text-foreground mb-2">No memories added yet</h3>
+          <h3 className="text-2xl font-serif text-foreground mb-2">No family photos yet</h3>
           <p className="text-muted-foreground mb-8 max-w-md text-lg">
-            Add photos of loved ones. It helps to have familiar faces easily accessible.
+            Add family members with photos in Family Circle — they will appear here automatically when you come back.
           </p>
-          <Button onClick={() => setIsAddOpen(true)} size="lg" className="h-14 px-8 text-lg rounded-full">
-            Add First Photo
-          </Button>
+          <Link href="/family">
+            <Button size="lg" className="h-14 px-8 text-lg rounded-full gap-2">
+              <Users className="w-5 h-5" /> Go to Family Circle
+            </Button>
+          </Link>
         </Card>
       )}
     </motion.div>

@@ -5,11 +5,11 @@
  * WanisAI API - consent-first cognitive health companion
  * OpenAPI spec version: 0.1.0
  */
-import type { AnthropicMessage } from './anthropicMessage';
+import type { LifeStoryEntrySource } from './lifeStoryEntrySource';
 
-export interface AnthropicConversationWithMessages {
+export interface LifeStoryEntry {
   id: number;
-  title: string;
+  source: LifeStoryEntrySource;
+  content: string;
   createdAt: Date;
-  messages: AnthropicMessage[];
 }

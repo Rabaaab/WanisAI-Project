@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
-import { desc, eq } from "drizzle-orm";
-import { db, checkInsTable } from "@workspace/db";
-import { anthropic } from "../lib/anthropic";
+import { desc, eq, and } from "drizzle-orm";
+import { db, checkInsTable, messagesTable, memoryPhotosTable, userProfilesTable, familyLettersTable, lifeStoryEntriesTable } from "@workspace/db";
+import { gemini } from "../lib/gemini";
 import {
   ListCheckInsResponse,
   CreateCheckInBody,
@@ -13,6 +13,8 @@ import {
   MarkActionCompleteBody,
   MarkActionCompleteResponse,
   GetCheckInDashboardResponse,
+  GenerateFamilyLetterBody,
+  GenerateFamilyLetterResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -77,6 +79,95 @@ router.post("/check-ins", async (req, res): Promise<void> => {
   res.status(201).json(CreateCheckInResponse.parse(checkIn));
 });
 
+router.post("/check-ins/family-letter", async (req, res): Promise<void> => {
+  const parsed = GenerateFamilyLetterBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [profile] = await db.select().from(userProfilesTable).limit(1);
+    const name = profile?.name ?? "Friend";
+
+    const checkIns = await db
+      .select()
+      .from(checkInsTable)
+      .orderBy(desc(checkInsTable.createdAt))
+      .limit(4);
+
+    const lastMsgs = await db
+      .select()
+      .from(messagesTable)
+      .where(eq(messagesTable.role, "assistant"))
+      .orderBy(desc(messagesTable.createdAt))
+      .limit(5);
+
+    const memoryPhotos = await db.select().from(memoryPhotosTable);
+
+    const checkInsContext = checkIns.map(c => `Prompt: ${c.prompt}, Response: ${c.response ?? "None"}, Mood: ${c.mood ?? "Unknown"}, Action Suggested: ${c.actionSuggested ?? "None"}, Completed: ${c.actionCompleted ? "Yes" : "No"}`).join("\n");
+    const messagesContext = lastMsgs.map(m => m.content).join("\n");
+    const photosContext = memoryPhotos.map(p => `${p.personName} (${p.relationship}): ${p.notes ?? ""}`).join("\n");
+
+    const promptText = `You are Wanis. Write a warm, human, one-paragraph letter to the family of ${name} summarizing how they have seemed this week. Mention one specific thing they talked about, whether they completed their suggested action, and one gentle thing worth the family knowing. Never use clinical language. Write in ${parsed.data.lang}.
+    
+    Here is the weekly context:
+    Name: ${name}
+    
+    Recent Weekly Reflections:
+    ${checkInsContext}
+    
+    Recent Dialogues with Wanis:
+    ${messagesContext}
+    
+    Loved Ones & Memories:
+    ${photosContext}`;
+
+    if (!process.env.GEMINI_API_KEY) {
+      res.status(503).json({ error: "Family letter generation is not configured. Please set GEMINI_API_KEY in the environment." });
+      return;
+    }
+
+    const geminiRes = await gemini.models.generateContent({
+      model: "gemini-flash-latest",
+      contents: promptText,
+      config: {
+        systemInstruction: "You are Wanis, a warm and caring companion who writes letters to family members with gentle updates.",
+        maxOutputTokens: 1024,
+      }
+    });
+
+    const letterContent = geminiRes.text?.trim() ?? '';
+
+    await db
+      .insert(familyLettersTable)
+      .values({
+        content: letterContent,
+        lang: parsed.data.lang,
+      });
+
+    res.json(GenerateFamilyLetterResponse.parse({ letter: letterContent }));
+  } catch (err) {
+    req.log.error({ err }, "Error generating family letter");
+    res.status(500).json({ error: "Failed to generate family letter. Please try again." });
+  }
+});
+
+router.get("/check-ins/family-letter", async (req, res): Promise<void> => {
+  try {
+    const [latestLetter] = await db
+      .select()
+      .from(familyLettersTable)
+      .orderBy(desc(familyLettersTable.createdAt))
+      .limit(1);
+
+    res.json(GenerateFamilyLetterResponse.parse({ letter: latestLetter?.content ?? "" }));
+  } catch (err) {
+    req.log.error({ err }, "Error fetching latest family letter");
+    res.status(500).json({ error: "Failed to fetch latest family letter." });
+  }
+});
+
 router.get("/check-ins/:id", async (req, res): Promise<void> => {
   const params = GetCheckInParams.safeParse(req.params);
   if (!params.success) {
@@ -119,10 +210,18 @@ router.post("/check-ins/:id/analyze", async (req, res): Promise<void> => {
 
 Your task: gently analyze the user's weekly reflection to understand their mood and social engagement. Compare gently against what seems like their normal baseline from this reflection alone.
 
+Prevention & Health Context:
+While analyzing mood and isolation, also draw context from current lifestyle-intervention prevention research. This "recipe" emphasizes:
+- Physical activity (e.g., active movement, walks)
+* Nutrition (e.g., balanced meals, hydration)
+* Social/cognitive engagement (e.g., learning, social interaction, active conversation)
+* Cardiometabolic health (e.g., heart health, general vitality)
+Use this evidence-based prevention context to gently inform your analysis and recommendations. Do NOT present this as a score, checklist, or tracker.
+
 Rules:
 - NEVER say "Alzheimer's", "dementia", "cognitive decline", or any diagnosis
 - If you notice isolation or low mood, gently say "a small change was noticed compared to your usual self — it might be worth sharing with someone you trust, or mentioning to a doctor at your next visit"
-- Suggest one concrete, specific action (e.g., "You might enjoy calling your daughter Sarah this week" or "A short walk in the park could be lovely")
+- Suggest one concrete, specific action (e.g., "You might enjoy calling your daughter Sarah this week" or "A short walk in the park could be lovely") that draws inspiration from the prevention areas above
 - Keep your tone warm, like a kind friend — not clinical
 - Keep the response concise (2-3 short paragraphs)
 - End with the suggested action clearly labeled
@@ -139,24 +238,42 @@ User's reflection: "${checkIn.response ?? "No response provided."}"`;
   let fullAnalysis = "";
 
   try {
-    const stream = anthropic.messages.stream({
-      model: "claude-sonnet-4-6",
-      max_tokens: 8192,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userMessage }],
+    // Step 1: Read check-in
+    res.write(`data: ${JSON.stringify({ status: "reading_checkin" })}\n\n`);
+    await new Promise((r) => setTimeout(r, 600));
+
+    // Step 2: Compare pattern
+    res.write(`data: ${JSON.stringify({ status: "comparing_pattern" })}\n\n`);
+    const prevCheckIns = await db
+      .select()
+      .from(checkInsTable)
+      .orderBy(desc(checkInsTable.createdAt))
+      .limit(3);
+    await new Promise((r) => setTimeout(r, 600));
+
+    // Step 3: Prepare suggestion
+    res.write(`data: ${JSON.stringify({ status: "preparing_suggestion" })}\n\n`);
+
+    const stream = await gemini.models.generateContentStream({
+      model: "gemini-flash-latest",
+      contents: userMessage,
+      config: {
+        systemInstruction: systemPrompt,
+        maxOutputTokens: 8192,
+      }
     });
 
-    for await (const event of stream) {
-      if (
-        event.type === "content_block_delta" &&
-        event.delta.type === "text_delta"
-      ) {
-        fullAnalysis += event.delta.text;
+    for await (const chunk of stream) {
+      if (chunk.text) {
+        fullAnalysis += chunk.text;
         res.write(
-          `data: ${JSON.stringify({ content: event.delta.text })}\n\n`
+          `data: ${JSON.stringify({ content: chunk.text })}\n\n`
         );
       }
     }
+
+    res.write(`data: ${JSON.stringify({ status: "verifying" })}\n\n`);
+    await new Promise((r) => setTimeout(r, 400));
 
     // Extract suggested action and mood from the analysis
     const moodMatch = fullAnalysis.match(/Mood & Connection:\s*(.+)/i);
@@ -176,6 +293,22 @@ User's reflection: "${checkIn.response ?? "No response provided."}"`;
         actionSuggested,
       })
       .where(eq(checkInsTable.id, params.data.id));
+
+    // Auto-capture life story entry
+    try {
+      const cleanText = fullAnalysis.replace(/Reflection:|Mood & Connection:|This week's gentle suggestion:/gi, "").trim();
+      const sentenceMatch = cleanText.match(/[^.!?]+[.!?]/);
+      const firstSentence = sentenceMatch ? sentenceMatch[0].trim() : cleanText.slice(0, 150).trim();
+      
+      if (firstSentence) {
+        await db.insert(lifeStoryEntriesTable).values({
+          source: "checkin",
+          content: firstSentence,
+        });
+      }
+    } catch (storyErr) {
+      req.log.error({ storyErr }, "Error auto-capturing check-in life story entry");
+    }
 
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();

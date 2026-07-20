@@ -21,22 +21,32 @@ import type {
 
 import type {
   ActionCompleteInput,
-  AnthropicConversation,
-  AnthropicConversationInput,
-  AnthropicConversationWithMessages,
-  AnthropicMessage,
-  AnthropicMessageInput,
   ApiError,
   CheckIn,
   CheckInDashboard,
   CheckInInput,
+  DoctorBrief,
+  FamilyLetterInput,
+  FamilyLetterResponse,
   FamilyMember,
   FamilyMemberInput,
   FamilyMemberUpdate,
   FamilySummary,
+  GeminiConversation,
+  GeminiConversationInput,
+  GeminiConversationWithMessages,
+  GeminiMessage,
+  GeminiMessageInput,
   GuardianProfile,
   GuardianProfileInput,
   HealthStatus,
+  LifeStoryEntry,
+  LifeStoryEntryInput,
+  Medication,
+  MedicationAnalyzeResponse,
+  MedicationInput,
+  MedicationVisionExtractRequest,
+  MedicationVisionExtractResponse,
   MemoryPhoto,
   MemoryPhotoInput,
   Routine,
@@ -912,9 +922,9 @@ export const getDeleteFamilyMemberUrl = (id: number,) => {
 /**
  * @summary Remove a family member
  */
-export const deleteFamilyMember = async (id: number, options?: RequestInit): Promise<void> => {
+export const deleteFamilyMember = async (id: number, options?: RequestInit): Promise<unknown> => {
 
-  return customFetch<void>(getDeleteFamilyMemberUrl(id),
+  return customFetch<unknown>(getDeleteFamilyMemberUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -971,6 +981,515 @@ export const useDeleteFamilyMember = <TError = ErrorType<ApiError>,
       > => {
       return useMutation(getDeleteFamilyMemberMutationOptions(options));
     }
+
+export const getListMedicationsUrl = () => {
+
+
+
+
+  return `/api/medications`
+}
+
+/**
+ * @summary List all medications
+ */
+export const listMedications = async ( options?: RequestInit): Promise<Medication[]> => {
+
+  return customFetch<Medication[]>(getListMedicationsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMedicationsQueryKey = () => {
+    return [
+    `/api/medications`
+    ] as const;
+    }
+
+
+export const getListMedicationsQueryOptions = <TData = Awaited<ReturnType<typeof listMedications>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMedications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMedicationsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMedications>>> = ({ signal }) => listMedications({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMedications>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMedicationsQueryResult = NonNullable<Awaited<ReturnType<typeof listMedications>>>
+export type ListMedicationsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all medications
+ */
+
+export function useListMedications<TData = Awaited<ReturnType<typeof listMedications>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMedications>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMedicationsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddMedicationUrl = () => {
+
+
+
+
+  return `/api/medications`
+}
+
+/**
+ * @summary Add a medication manually
+ */
+export const addMedication = async (medicationInput: MedicationInput, options?: RequestInit): Promise<Medication> => {
+
+  return customFetch<Medication>(getAddMedicationUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(medicationInput)
+  }
+);}
+
+
+
+
+
+export const getAddMedicationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addMedication>>, TError,{data: BodyType<MedicationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addMedication>>, TError,{data: BodyType<MedicationInput>}, TContext> => {
+
+const mutationKey = ['addMedication'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addMedication>>, {data: BodyType<MedicationInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  addMedication(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddMedicationMutationResult = NonNullable<Awaited<ReturnType<typeof addMedication>>>
+    export type AddMedicationMutationBody = BodyType<MedicationInput>
+    export type AddMedicationMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a medication manually
+ */
+export const useAddMedication = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addMedication>>, TError,{data: BodyType<MedicationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addMedication>>,
+        TError,
+        {data: BodyType<MedicationInput>},
+        TContext
+      > => {
+      return useMutation(getAddMedicationMutationOptions(options));
+    }
+
+export const getDeleteMedicationUrl = (id: number,) => {
+
+
+
+
+  return `/api/medications/${id}`
+}
+
+/**
+ * @summary Remove a medication
+ */
+export const deleteMedication = async (id: number, options?: RequestInit): Promise<Medication> => {
+
+  return customFetch<Medication>(getDeleteMedicationUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteMedicationMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMedication>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteMedication>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteMedication'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteMedication>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteMedication(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteMedicationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteMedication>>>
+
+    export type DeleteMedicationMutationError = ErrorType<void>
+
+    /**
+ * @summary Remove a medication
+ */
+export const useDeleteMedication = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMedication>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteMedication>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteMedicationMutationOptions(options));
+    }
+
+export const getExtractMedicationVisionUrl = () => {
+
+
+
+
+  return `/api/medications/extract-vision`
+}
+
+/**
+ * @summary Extract medication details from an uploaded image
+ */
+export const extractMedicationVision = async (medicationVisionExtractRequest: MedicationVisionExtractRequest, options?: RequestInit): Promise<MedicationVisionExtractResponse> => {
+
+  return customFetch<MedicationVisionExtractResponse>(getExtractMedicationVisionUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(medicationVisionExtractRequest)
+  }
+);}
+
+
+
+
+
+export const getExtractMedicationVisionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractMedicationVision>>, TError,{data: BodyType<MedicationVisionExtractRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof extractMedicationVision>>, TError,{data: BodyType<MedicationVisionExtractRequest>}, TContext> => {
+
+const mutationKey = ['extractMedicationVision'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractMedicationVision>>, {data: BodyType<MedicationVisionExtractRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  extractMedicationVision(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExtractMedicationVisionMutationResult = NonNullable<Awaited<ReturnType<typeof extractMedicationVision>>>
+    export type ExtractMedicationVisionMutationBody = BodyType<MedicationVisionExtractRequest>
+    export type ExtractMedicationVisionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Extract medication details from an uploaded image
+ */
+export const useExtractMedicationVision = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractMedicationVision>>, TError,{data: BodyType<MedicationVisionExtractRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof extractMedicationVision>>,
+        TError,
+        {data: BodyType<MedicationVisionExtractRequest>},
+        TContext
+      > => {
+      return useMutation(getExtractMedicationVisionMutationOptions(options));
+    }
+
+export const getAnalyzeMedicationsUrl = () => {
+
+
+
+
+  return `/api/medications/analyze`
+}
+
+/**
+ * @summary Analyze current medications for ACB burden
+ */
+export const analyzeMedications = async ( options?: RequestInit): Promise<MedicationAnalyzeResponse> => {
+
+  return customFetch<MedicationAnalyzeResponse>(getAnalyzeMedicationsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getAnalyzeMedicationsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeMedications>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof analyzeMedications>>, TError,void, TContext> => {
+
+const mutationKey = ['analyzeMedications'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyzeMedications>>, void> = () => {
+
+
+          return  analyzeMedications(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnalyzeMedicationsMutationResult = NonNullable<Awaited<ReturnType<typeof analyzeMedications>>>
+
+    export type AnalyzeMedicationsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Analyze current medications for ACB burden
+ */
+export const useAnalyzeMedications = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeMedications>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof analyzeMedications>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getAnalyzeMedicationsMutationOptions(options));
+    }
+
+export const getGenerateDoctorBriefUrl = () => {
+
+
+
+
+  return `/api/doctor-briefs`
+}
+
+/**
+ * @summary Generate a new Doctor Brief document
+ */
+export const generateDoctorBrief = async ( options?: RequestInit): Promise<DoctorBrief> => {
+
+  return customFetch<DoctorBrief>(getGenerateDoctorBriefUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getGenerateDoctorBriefMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateDoctorBrief>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateDoctorBrief>>, TError,void, TContext> => {
+
+const mutationKey = ['generateDoctorBrief'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateDoctorBrief>>, void> = () => {
+
+
+          return  generateDoctorBrief(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateDoctorBriefMutationResult = NonNullable<Awaited<ReturnType<typeof generateDoctorBrief>>>
+
+    export type GenerateDoctorBriefMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Generate a new Doctor Brief document
+ */
+export const useGenerateDoctorBrief = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateDoctorBrief>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateDoctorBrief>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getGenerateDoctorBriefMutationOptions(options));
+    }
+
+export const getGetSharedDoctorBriefUrl = (key: string,) => {
+
+
+
+
+  return `/api/doctor-briefs/share/${key}`
+}
+
+/**
+ * @summary Get a shared Doctor Brief by its secure key
+ */
+export const getSharedDoctorBrief = async (key: string, options?: RequestInit): Promise<DoctorBrief> => {
+
+  return customFetch<DoctorBrief>(getGetSharedDoctorBriefUrl(key),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSharedDoctorBriefQueryKey = (key: string,) => {
+    return [
+    `/api/doctor-briefs/share/${key}`
+    ] as const;
+    }
+
+
+export const getGetSharedDoctorBriefQueryOptions = <TData = Awaited<ReturnType<typeof getSharedDoctorBrief>>, TError = ErrorType<void>>(key: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSharedDoctorBrief>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSharedDoctorBriefQueryKey(key);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSharedDoctorBrief>>> = ({ signal }) => getSharedDoctorBrief(key, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: key !== null && key !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSharedDoctorBrief>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSharedDoctorBriefQueryResult = NonNullable<Awaited<ReturnType<typeof getSharedDoctorBrief>>>
+export type GetSharedDoctorBriefQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a shared Doctor Brief by its secure key
+ */
+
+export function useGetSharedDoctorBrief<TData = Awaited<ReturnType<typeof getSharedDoctorBrief>>, TError = ErrorType<void>>(
+ key: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSharedDoctorBrief>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSharedDoctorBriefQueryOptions(key,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListRoutinesUrl = () => {
 
@@ -1487,6 +2006,154 @@ export function useGetCheckInDashboard<TData = Awaited<ReturnType<typeof getChec
 
 
 
+
+export const getGetLatestFamilyLetterUrl = () => {
+
+
+
+
+  return `/api/check-ins/family-letter`
+}
+
+/**
+ * @summary Get the most recently generated family letter
+ */
+export const getLatestFamilyLetter = async ( options?: RequestInit): Promise<FamilyLetterResponse> => {
+
+  return customFetch<FamilyLetterResponse>(getGetLatestFamilyLetterUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLatestFamilyLetterQueryKey = () => {
+    return [
+    `/api/check-ins/family-letter`
+    ] as const;
+    }
+
+
+export const getGetLatestFamilyLetterQueryOptions = <TData = Awaited<ReturnType<typeof getLatestFamilyLetter>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLatestFamilyLetter>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLatestFamilyLetterQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLatestFamilyLetter>>> = ({ signal }) => getLatestFamilyLetter({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLatestFamilyLetter>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLatestFamilyLetterQueryResult = NonNullable<Awaited<ReturnType<typeof getLatestFamilyLetter>>>
+export type GetLatestFamilyLetterQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the most recently generated family letter
+ */
+
+export function useGetLatestFamilyLetter<TData = Awaited<ReturnType<typeof getLatestFamilyLetter>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLatestFamilyLetter>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLatestFamilyLetterQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGenerateFamilyLetterUrl = () => {
+
+
+
+
+  return `/api/check-ins/family-letter`
+}
+
+/**
+ * @summary Generate a weekly letter to the family using AI
+ */
+export const generateFamilyLetter = async (familyLetterInput: FamilyLetterInput, options?: RequestInit): Promise<FamilyLetterResponse> => {
+
+  return customFetch<FamilyLetterResponse>(getGenerateFamilyLetterUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(familyLetterInput)
+  }
+);}
+
+
+
+
+
+export const getGenerateFamilyLetterMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateFamilyLetter>>, TError,{data: BodyType<FamilyLetterInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateFamilyLetter>>, TError,{data: BodyType<FamilyLetterInput>}, TContext> => {
+
+const mutationKey = ['generateFamilyLetter'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateFamilyLetter>>, {data: BodyType<FamilyLetterInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateFamilyLetter(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateFamilyLetterMutationResult = NonNullable<Awaited<ReturnType<typeof generateFamilyLetter>>>
+    export type GenerateFamilyLetterMutationBody = BodyType<FamilyLetterInput>
+    export type GenerateFamilyLetterMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Generate a weekly letter to the family using AI
+ */
+export const useGenerateFamilyLetter = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateFamilyLetter>>, TError,{data: BodyType<FamilyLetterInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateFamilyLetter>>,
+        TError,
+        {data: BodyType<FamilyLetterInput>},
+        TContext
+      > => {
+      return useMutation(getGenerateFamilyLetterMutationOptions(options));
+    }
 
 export const getGetCheckInUrl = (id: number,) => {
 
@@ -2294,20 +2961,20 @@ export const useDeleteTogetherAudio = <TError = ErrorType<void>,
       return useMutation(getDeleteTogetherAudioMutationOptions(options));
     }
 
-export const getListAnthropicConversationsUrl = () => {
+export const getListGeminiConversationsUrl = () => {
 
 
 
 
-  return `/api/anthropic/conversations`
+  return `/api/gemini/conversations`
 }
 
 /**
  * @summary List all conversations
  */
-export const listAnthropicConversations = async ( options?: RequestInit): Promise<AnthropicConversation[]> => {
+export const listGeminiConversations = async ( options?: RequestInit): Promise<GeminiConversation[]> => {
 
-  return customFetch<AnthropicConversation[]>(getListAnthropicConversationsUrl(),
+  return customFetch<GeminiConversation[]>(getListGeminiConversationsUrl(),
   {
     ...options,
     method: 'GET'
@@ -2320,45 +2987,45 @@ export const listAnthropicConversations = async ( options?: RequestInit): Promis
 
 
 
-export const getListAnthropicConversationsQueryKey = () => {
+export const getListGeminiConversationsQueryKey = () => {
     return [
-    `/api/anthropic/conversations`
+    `/api/gemini/conversations`
     ] as const;
     }
 
 
-export const getListAnthropicConversationsQueryOptions = <TData = Awaited<ReturnType<typeof listAnthropicConversations>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAnthropicConversations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListGeminiConversationsQueryOptions = <TData = Awaited<ReturnType<typeof listGeminiConversations>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGeminiConversations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListAnthropicConversationsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListGeminiConversationsQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAnthropicConversations>>> = ({ signal }) => listAnthropicConversations({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGeminiConversations>>> = ({ signal }) => listGeminiConversations({ signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAnthropicConversations>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGeminiConversations>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type ListAnthropicConversationsQueryResult = NonNullable<Awaited<ReturnType<typeof listAnthropicConversations>>>
-export type ListAnthropicConversationsQueryError = ErrorType<unknown>
+export type ListGeminiConversationsQueryResult = NonNullable<Awaited<ReturnType<typeof listGeminiConversations>>>
+export type ListGeminiConversationsQueryError = ErrorType<unknown>
 
 
 /**
  * @summary List all conversations
  */
 
-export function useListAnthropicConversations<TData = Awaited<ReturnType<typeof listAnthropicConversations>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAnthropicConversations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListGeminiConversations<TData = Awaited<ReturnType<typeof listGeminiConversations>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGeminiConversations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListAnthropicConversationsQueryOptions(options)
+  const queryOptions = getListGeminiConversationsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -2371,25 +3038,25 @@ export function useListAnthropicConversations<TData = Awaited<ReturnType<typeof 
 
 
 
-export const getCreateAnthropicConversationUrl = () => {
+export const getCreateGeminiConversationUrl = () => {
 
 
 
 
-  return `/api/anthropic/conversations`
+  return `/api/gemini/conversations`
 }
 
 /**
  * @summary Create a new conversation
  */
-export const createAnthropicConversation = async (anthropicConversationInput: AnthropicConversationInput, options?: RequestInit): Promise<AnthropicConversation> => {
+export const createGeminiConversation = async (geminiConversationInput: GeminiConversationInput, options?: RequestInit): Promise<GeminiConversation> => {
 
-  return customFetch<AnthropicConversation>(getCreateAnthropicConversationUrl(),
+  return customFetch<GeminiConversation>(getCreateGeminiConversationUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(anthropicConversationInput)
+    body: JSON.stringify(geminiConversationInput)
   }
 );}
 
@@ -2397,11 +3064,11 @@ export const createAnthropicConversation = async (anthropicConversationInput: An
 
 
 
-export const getCreateAnthropicConversationMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAnthropicConversation>>, TError,{data: BodyType<AnthropicConversationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createAnthropicConversation>>, TError,{data: BodyType<AnthropicConversationInput>}, TContext> => {
+export const getCreateGeminiConversationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGeminiConversation>>, TError,{data: BodyType<GeminiConversationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createGeminiConversation>>, TError,{data: BodyType<GeminiConversationInput>}, TContext> => {
 
-const mutationKey = ['createAnthropicConversation'];
+const mutationKey = ['createGeminiConversation'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -2411,10 +3078,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAnthropicConversation>>, {data: BodyType<AnthropicConversationInput>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createGeminiConversation>>, {data: BodyType<GeminiConversationInput>}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAnthropicConversation(data,requestOptions)
+          return  createGeminiConversation(data,requestOptions)
         }
 
 
@@ -2424,38 +3091,38 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAnthropicConversationMutationResult = NonNullable<Awaited<ReturnType<typeof createAnthropicConversation>>>
-    export type CreateAnthropicConversationMutationBody = BodyType<AnthropicConversationInput>
-    export type CreateAnthropicConversationMutationError = ErrorType<unknown>
+    export type CreateGeminiConversationMutationResult = NonNullable<Awaited<ReturnType<typeof createGeminiConversation>>>
+    export type CreateGeminiConversationMutationBody = BodyType<GeminiConversationInput>
+    export type CreateGeminiConversationMutationError = ErrorType<unknown>
 
     /**
  * @summary Create a new conversation
  */
-export const useCreateAnthropicConversation = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAnthropicConversation>>, TError,{data: BodyType<AnthropicConversationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+export const useCreateGeminiConversation = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGeminiConversation>>, TError,{data: BodyType<GeminiConversationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof createAnthropicConversation>>,
+        Awaited<ReturnType<typeof createGeminiConversation>>,
         TError,
-        {data: BodyType<AnthropicConversationInput>},
+        {data: BodyType<GeminiConversationInput>},
         TContext
       > => {
-      return useMutation(getCreateAnthropicConversationMutationOptions(options));
+      return useMutation(getCreateGeminiConversationMutationOptions(options));
     }
 
-export const getGetAnthropicConversationUrl = (id: number,) => {
+export const getGetGeminiConversationUrl = (id: number,) => {
 
 
 
 
-  return `/api/anthropic/conversations/${id}`
+  return `/api/gemini/conversations/${id}`
 }
 
 /**
  * @summary Get conversation with messages
  */
-export const getAnthropicConversation = async (id: number, options?: RequestInit): Promise<AnthropicConversationWithMessages> => {
+export const getGeminiConversation = async (id: number, options?: RequestInit): Promise<GeminiConversationWithMessages> => {
 
-  return customFetch<AnthropicConversationWithMessages>(getGetAnthropicConversationUrl(id),
+  return customFetch<GeminiConversationWithMessages>(getGetGeminiConversationUrl(id),
   {
     ...options,
     method: 'GET'
@@ -2468,45 +3135,45 @@ export const getAnthropicConversation = async (id: number, options?: RequestInit
 
 
 
-export const getGetAnthropicConversationQueryKey = (id: number,) => {
+export const getGetGeminiConversationQueryKey = (id: number,) => {
     return [
-    `/api/anthropic/conversations/${id}`
+    `/api/gemini/conversations/${id}`
     ] as const;
     }
 
 
-export const getGetAnthropicConversationQueryOptions = <TData = Awaited<ReturnType<typeof getAnthropicConversation>>, TError = ErrorType<ApiError>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAnthropicConversation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetGeminiConversationQueryOptions = <TData = Awaited<ReturnType<typeof getGeminiConversation>>, TError = ErrorType<ApiError>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGeminiConversation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAnthropicConversationQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetGeminiConversationQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAnthropicConversation>>> = ({ signal }) => getAnthropicConversation(id, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGeminiConversation>>> = ({ signal }) => getGeminiConversation(id, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAnthropicConversation>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGeminiConversation>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetAnthropicConversationQueryResult = NonNullable<Awaited<ReturnType<typeof getAnthropicConversation>>>
-export type GetAnthropicConversationQueryError = ErrorType<ApiError>
+export type GetGeminiConversationQueryResult = NonNullable<Awaited<ReturnType<typeof getGeminiConversation>>>
+export type GetGeminiConversationQueryError = ErrorType<ApiError>
 
 
 /**
  * @summary Get conversation with messages
  */
 
-export function useGetAnthropicConversation<TData = Awaited<ReturnType<typeof getAnthropicConversation>>, TError = ErrorType<ApiError>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAnthropicConversation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useGetGeminiConversation<TData = Awaited<ReturnType<typeof getGeminiConversation>>, TError = ErrorType<ApiError>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGeminiConversation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetAnthropicConversationQueryOptions(id,options)
+  const queryOptions = getGetGeminiConversationQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -2519,20 +3186,20 @@ export function useGetAnthropicConversation<TData = Awaited<ReturnType<typeof ge
 
 
 
-export const getDeleteAnthropicConversationUrl = (id: number,) => {
+export const getDeleteGeminiConversationUrl = (id: number,) => {
 
 
 
 
-  return `/api/anthropic/conversations/${id}`
+  return `/api/gemini/conversations/${id}`
 }
 
 /**
  * @summary Delete a conversation
  */
-export const deleteAnthropicConversation = async (id: number, options?: RequestInit): Promise<void> => {
+export const deleteGeminiConversation = async (id: number, options?: RequestInit): Promise<void> => {
 
-  return customFetch<void>(getDeleteAnthropicConversationUrl(id),
+  return customFetch<void>(getDeleteGeminiConversationUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -2545,11 +3212,11 @@ export const deleteAnthropicConversation = async (id: number, options?: RequestI
 
 
 
-export const getDeleteAnthropicConversationMutationOptions = <TError = ErrorType<ApiError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAnthropicConversation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAnthropicConversation>>, TError,{id: number}, TContext> => {
+export const getDeleteGeminiConversationMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGeminiConversation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteGeminiConversation>>, TError,{id: number}, TContext> => {
 
-const mutationKey = ['deleteAnthropicConversation'];
+const mutationKey = ['deleteGeminiConversation'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -2559,10 +3226,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAnthropicConversation>>, {id: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteGeminiConversation>>, {id: number}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteAnthropicConversation(id,requestOptions)
+          return  deleteGeminiConversation(id,requestOptions)
         }
 
 
@@ -2572,38 +3239,38 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteAnthropicConversationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAnthropicConversation>>>
+    export type DeleteGeminiConversationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGeminiConversation>>>
 
-    export type DeleteAnthropicConversationMutationError = ErrorType<ApiError>
+    export type DeleteGeminiConversationMutationError = ErrorType<ApiError>
 
     /**
  * @summary Delete a conversation
  */
-export const useDeleteAnthropicConversation = <TError = ErrorType<ApiError>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAnthropicConversation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+export const useDeleteGeminiConversation = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGeminiConversation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAnthropicConversation>>,
+        Awaited<ReturnType<typeof deleteGeminiConversation>>,
         TError,
         {id: number},
         TContext
       > => {
-      return useMutation(getDeleteAnthropicConversationMutationOptions(options));
+      return useMutation(getDeleteGeminiConversationMutationOptions(options));
     }
 
-export const getListAnthropicMessagesUrl = (id: number,) => {
+export const getListGeminiMessagesUrl = (id: number,) => {
 
 
 
 
-  return `/api/anthropic/conversations/${id}/messages`
+  return `/api/gemini/conversations/${id}/messages`
 }
 
 /**
  * @summary List messages in a conversation
  */
-export const listAnthropicMessages = async (id: number, options?: RequestInit): Promise<AnthropicMessage[]> => {
+export const listGeminiMessages = async (id: number, options?: RequestInit): Promise<GeminiMessage[]> => {
 
-  return customFetch<AnthropicMessage[]>(getListAnthropicMessagesUrl(id),
+  return customFetch<GeminiMessage[]>(getListGeminiMessagesUrl(id),
   {
     ...options,
     method: 'GET'
@@ -2616,45 +3283,45 @@ export const listAnthropicMessages = async (id: number, options?: RequestInit): 
 
 
 
-export const getListAnthropicMessagesQueryKey = (id: number,) => {
+export const getListGeminiMessagesQueryKey = (id: number,) => {
     return [
-    `/api/anthropic/conversations/${id}/messages`
+    `/api/gemini/conversations/${id}/messages`
     ] as const;
     }
 
 
-export const getListAnthropicMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listAnthropicMessages>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAnthropicMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListGeminiMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listGeminiMessages>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGeminiMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListAnthropicMessagesQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getListGeminiMessagesQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAnthropicMessages>>> = ({ signal }) => listAnthropicMessages(id, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGeminiMessages>>> = ({ signal }) => listGeminiMessages(id, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAnthropicMessages>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGeminiMessages>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type ListAnthropicMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listAnthropicMessages>>>
-export type ListAnthropicMessagesQueryError = ErrorType<unknown>
+export type ListGeminiMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listGeminiMessages>>>
+export type ListGeminiMessagesQueryError = ErrorType<unknown>
 
 
 /**
  * @summary List messages in a conversation
  */
 
-export function useListAnthropicMessages<TData = Awaited<ReturnType<typeof listAnthropicMessages>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAnthropicMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListGeminiMessages<TData = Awaited<ReturnType<typeof listGeminiMessages>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGeminiMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListAnthropicMessagesQueryOptions(id,options)
+  const queryOptions = getListGeminiMessagesQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -2667,26 +3334,26 @@ export function useListAnthropicMessages<TData = Awaited<ReturnType<typeof listA
 
 
 
-export const getSendAnthropicMessageUrl = (id: number,) => {
+export const getSendGeminiMessageUrl = (id: number,) => {
 
 
 
 
-  return `/api/anthropic/conversations/${id}/messages`
+  return `/api/gemini/conversations/${id}/messages`
 }
 
 /**
  * @summary Send a message and receive an AI response (SSE stream)
  */
-export const sendAnthropicMessage = async (id: number,
-    anthropicMessageInput: AnthropicMessageInput, options?: RequestInit): Promise<unknown> => {
+export const sendGeminiMessage = async (id: number,
+    geminiMessageInput: GeminiMessageInput, options?: RequestInit): Promise<unknown> => {
 
-  return customFetch<unknown>(getSendAnthropicMessageUrl(id),
+  return customFetch<unknown>(getSendGeminiMessageUrl(id),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(anthropicMessageInput)
+    body: JSON.stringify(geminiMessageInput)
   }
 );}
 
@@ -2694,11 +3361,11 @@ export const sendAnthropicMessage = async (id: number,
 
 
 
-export const getSendAnthropicMessageMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendAnthropicMessage>>, TError,{id: number;data: BodyType<AnthropicMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof sendAnthropicMessage>>, TError,{id: number;data: BodyType<AnthropicMessageInput>}, TContext> => {
+export const getSendGeminiMessageMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendGeminiMessage>>, TError,{id: number;data: BodyType<GeminiMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendGeminiMessage>>, TError,{id: number;data: BodyType<GeminiMessageInput>}, TContext> => {
 
-const mutationKey = ['sendAnthropicMessage'];
+const mutationKey = ['sendGeminiMessage'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -2708,10 +3375,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendAnthropicMessage>>, {id: number;data: BodyType<AnthropicMessageInput>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendGeminiMessage>>, {id: number;data: BodyType<GeminiMessageInput>}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  sendAnthropicMessage(id,data,requestOptions)
+          return  sendGeminiMessage(id,data,requestOptions)
         }
 
 
@@ -2721,21 +3388,169 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SendAnthropicMessageMutationResult = NonNullable<Awaited<ReturnType<typeof sendAnthropicMessage>>>
-    export type SendAnthropicMessageMutationBody = BodyType<AnthropicMessageInput>
-    export type SendAnthropicMessageMutationError = ErrorType<unknown>
+    export type SendGeminiMessageMutationResult = NonNullable<Awaited<ReturnType<typeof sendGeminiMessage>>>
+    export type SendGeminiMessageMutationBody = BodyType<GeminiMessageInput>
+    export type SendGeminiMessageMutationError = ErrorType<unknown>
 
     /**
  * @summary Send a message and receive an AI response (SSE stream)
  */
-export const useSendAnthropicMessage = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendAnthropicMessage>>, TError,{id: number;data: BodyType<AnthropicMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+export const useSendGeminiMessage = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendGeminiMessage>>, TError,{id: number;data: BodyType<GeminiMessageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof sendAnthropicMessage>>,
+        Awaited<ReturnType<typeof sendGeminiMessage>>,
         TError,
-        {id: number;data: BodyType<AnthropicMessageInput>},
+        {id: number;data: BodyType<GeminiMessageInput>},
         TContext
       > => {
-      return useMutation(getSendAnthropicMessageMutationOptions(options));
+      return useMutation(getSendGeminiMessageMutationOptions(options));
+    }
+
+export const getListLifeStoryEntriesUrl = () => {
+
+
+
+
+  return `/api/life-story`
+}
+
+/**
+ * @summary Get all life story entries
+ */
+export const listLifeStoryEntries = async ( options?: RequestInit): Promise<LifeStoryEntry[]> => {
+
+  return customFetch<LifeStoryEntry[]>(getListLifeStoryEntriesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListLifeStoryEntriesQueryKey = () => {
+    return [
+    `/api/life-story`
+    ] as const;
+    }
+
+
+export const getListLifeStoryEntriesQueryOptions = <TData = Awaited<ReturnType<typeof listLifeStoryEntries>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listLifeStoryEntries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListLifeStoryEntriesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listLifeStoryEntries>>> = ({ signal }) => listLifeStoryEntries({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listLifeStoryEntries>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListLifeStoryEntriesQueryResult = NonNullable<Awaited<ReturnType<typeof listLifeStoryEntries>>>
+export type ListLifeStoryEntriesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get all life story entries
+ */
+
+export function useListLifeStoryEntries<TData = Awaited<ReturnType<typeof listLifeStoryEntries>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listLifeStoryEntries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListLifeStoryEntriesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateLifeStoryEntryUrl = () => {
+
+
+
+
+  return `/api/life-story/entry`
+}
+
+/**
+ * @summary Add a new life story entry manually or via hook
+ */
+export const createLifeStoryEntry = async (lifeStoryEntryInput: LifeStoryEntryInput, options?: RequestInit): Promise<LifeStoryEntry> => {
+
+  return customFetch<LifeStoryEntry>(getCreateLifeStoryEntryUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(lifeStoryEntryInput)
+  }
+);}
+
+
+
+
+
+export const getCreateLifeStoryEntryMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createLifeStoryEntry>>, TError,{data: BodyType<LifeStoryEntryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createLifeStoryEntry>>, TError,{data: BodyType<LifeStoryEntryInput>}, TContext> => {
+
+const mutationKey = ['createLifeStoryEntry'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createLifeStoryEntry>>, {data: BodyType<LifeStoryEntryInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createLifeStoryEntry(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateLifeStoryEntryMutationResult = NonNullable<Awaited<ReturnType<typeof createLifeStoryEntry>>>
+    export type CreateLifeStoryEntryMutationBody = BodyType<LifeStoryEntryInput>
+    export type CreateLifeStoryEntryMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a new life story entry manually or via hook
+ */
+export const useCreateLifeStoryEntry = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createLifeStoryEntry>>, TError,{data: BodyType<LifeStoryEntryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createLifeStoryEntry>>,
+        TError,
+        {data: BodyType<LifeStoryEntryInput>},
+        TContext
+      > => {
+      return useMutation(getCreateLifeStoryEntryMutationOptions(options));
     }
 

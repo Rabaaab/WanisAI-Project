@@ -1,20 +1,21 @@
 import { useState, useRef, useEffect } from "react"
 import {
-  useListMemoryPhotos,
+  useListFamilyMembers,
   useListTogetherAudio,
-  useCreateMemoryPhoto,
-  useListAnthropicConversations,
-  useCreateAnthropicConversation,
+  useListGeminiConversations,
+  useCreateGeminiConversation,
+  useCreateTogetherAudio,
 } from "@workspace/api-client-react"
-import type { MemoryPhoto, TogetherAudio } from "@workspace/api-client-react"
+import type { FamilyMember, TogetherAudio } from "@workspace/api-client-react"
 import { useGetProfile } from "@workspace/api-client-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Mic, MicOff, BookmarkPlus, RefreshCw, Play, Pause, Heart } from "lucide-react"
+import { Mic, MicOff, RefreshCw, Play, Pause, Heart } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { WanisCharacter } from "@/components/WanisCharacter"
 import { photoSrc } from "@/components/PhotoUploader"
 import { useLang } from "@/contexts/LanguageContext"
+import { useUpload } from "@workspace/object-storage-web"
 
 const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "")
 
@@ -50,7 +51,7 @@ function useWanisStream() {
 
     try {
       const res = await fetch(
-        `${BASE_URL}/api/anthropic/conversations/${conversationId}/messages`,
+        `${BASE_URL}/api/gemini/conversations/${conversationId}/messages`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -123,13 +124,13 @@ function useMic(lang: string, onResult: (text: string) => void) {
 // ── Photo card ─────────────────────────────────────────────────────────────────
 function PhotoCard({ conversationId }: { conversationId: number | null }) {
   const { lang } = useLang()
-  const { data: photos } = useListMemoryPhotos()
-  const createMemory = useCreateMemoryPhoto()
+  // Pull directly from Family Circle — single shared data source
+  const { data: members } = useListFamilyMembers()
+  const familyPhotos = Array.isArray(members) ? members.filter((m) => m.photoUrl) : []
 
-  const [photo, setPhoto] = useState<MemoryPhoto | null>(null)
+  const [photo, setPhoto] = useState<FamilyMember | null>(null)
   const [input, setInput] = useState("")
   const [phase, setPhase] = useState<"idle" | "prompt" | "done">("idle")
-  const [saved, setSaved] = useState(false)
 
   const { stream, isStreaming, streamingText, finalText, error, setError } = useWanisStream()
   const { isListening, toggle, srAvailable } = useMic(lang, (t) =>
@@ -137,36 +138,22 @@ function PhotoCard({ conversationId }: { conversationId: number | null }) {
   )
 
   function pickPhoto() {
-    if (!photos || photos.length === 0) return
-    const pick = photos[Math.floor(Math.random() * photos.length)]
+    if (familyPhotos.length === 0) return
+    const pick = familyPhotos[Math.floor(Math.random() * familyPhotos.length)]
     setPhoto(pick)
     setInput("")
-    setSaved(false)
     setError("")
     setPhase("prompt")
   }
 
   async function handleSend() {
     if (!conversationId || !photo || !input.trim()) return
-    const context = `[Looking at a photo. Person: ${photo.personName}. Their relationship: ${photo.relationship}. Family notes: "${photo.notes || "none"}". The person viewing said: "${input.trim()}"]`
-    await stream(conversationId, context, SYSTEM_PROMPT)
+    const context = `[Looking at a photo. Person: ${photo.name}. Their relationship: ${photo.relationship}. The person viewing said: "${input.trim()}"]`
     setPhase("done")
+    await stream(conversationId, context, SYSTEM_PROMPT)
   }
 
-  async function handleSave() {
-    if (!photo || !input.trim()) return
-    await createMemory.mutateAsync({
-      data: {
-        personName: photo.personName,
-        relationship: photo.relationship,
-        photoUrl: photo.photoUrl,
-        notes: `${photo.notes ? photo.notes + " — " : ""}Memory shared: ${input.trim()}`,
-      },
-    })
-    setSaved(true)
-  }
-
-  const hasPhotos = photos && photos.length > 0
+  const hasPhotos = familyPhotos.length > 0
   const displayText = isStreaming ? streamingText : finalText
 
   return (
@@ -181,7 +168,7 @@ function PhotoCard({ conversationId }: { conversationId: number | null }) {
             Tell me about this
           </h2>
           <p className="text-sm text-muted-foreground">
-            A familiar face from your memory vault
+            A familiar face from your Family Circle
           </p>
         </div>
       </div>
@@ -189,7 +176,7 @@ function PhotoCard({ conversationId }: { conversationId: number | null }) {
       <div className="p-6 space-y-5">
         {!hasPhotos && (
           <p className="text-muted-foreground text-center py-4 text-base">
-            Add photos in the Memory section so Wanis can show them here.
+            Add family members with photos in <strong>Family Circle</strong> so Wanis can show them here.
           </p>
         )}
 
@@ -217,10 +204,10 @@ function PhotoCard({ conversationId }: { conversationId: number | null }) {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-5"
             >
-              {/* Photo — name hidden */}
+              {/* Photo — name hidden to support reminiscence without prompting */}
               <div className="relative rounded-2xl overflow-hidden bg-card">
                 <img
-                  src={photoSrc(photo.photoUrl) ?? photo.photoUrl}
+                  src={photoSrc(photo.photoUrl ?? null) ?? photo.photoUrl ?? ""}
                   alt="A familiar face"
                   className="w-full max-h-72 object-cover"
                 />
@@ -230,9 +217,25 @@ function PhotoCard({ conversationId }: { conversationId: number | null }) {
               <div className="flex gap-3 items-start">
                 <WanisCharacter pose="listening" size={36} className="shrink-0 mt-0.5" />
                 <div className="bg-card rounded-2xl rounded-tl-sm p-4 text-base text-foreground leading-relaxed shadow-sm border border-card-border flex-1">
-                  Who is this, or what do you remember about this moment?
+                  {lang === "ar"
+                    ? "ما الذي يتبادر إلى ذهنك عند النظر إلى هذه الصورة؟"
+                    : lang === "fr"
+                      ? "Qu’est-ce qui vous vient à l’esprit en regardant cette photo ?"
+                      : "What comes to mind when you look at this photo?"}
                 </div>
               </div>
+
+              {/* User shared memory */}
+              {(phase === "done" || isStreaming) && input.trim() && (
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm p-4 text-base leading-relaxed shadow-sm max-w-[85%]">
+                    {input.trim()}
+                  </div>
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-sm">
+                    You
+                  </div>
+                </div>
+              )}
 
               {/* Input */}
               {phase === "prompt" && (
@@ -302,24 +305,9 @@ function PhotoCard({ conversationId }: { conversationId: number | null }) {
                 </div>
               )}
 
-              {/* Save + try another */}
+              {/* After Wanis responds — option to look at another */}
               {phase === "done" && finalText && (
                 <div className="flex flex-col gap-3 pt-1">
-                  {!saved ? (
-                    <Button
-                      size="lg"
-                      className="w-full h-14 rounded-2xl text-lg font-serif font-semibold"
-                      onClick={handleSave}
-                      disabled={createMemory.isPending}
-                    >
-                      <BookmarkPlus className="w-5 h-5 me-2" />
-                      {createMemory.isPending ? "Saving…" : "Save this memory"}
-                    </Button>
-                  ) : (
-                    <div className="text-center py-2 text-primary font-medium">
-                      ✓ Memory saved
-                    </div>
-                  )}
                   <Button
                     variant="outline"
                     className="w-full h-12 rounded-xl"
@@ -343,15 +331,45 @@ function PhotoCard({ conversationId }: { conversationId: number | null }) {
 
 // ── Audio card ─────────────────────────────────────────────────────────────────
 function AudioCard({ conversationId }: { conversationId: number | null }) {
-  const { lang } = useLang()
-  const { data: audioList, isLoading } = useListTogetherAudio()
-  const createMemory = useCreateMemoryPhoto()
+  const { lang, t } = useLang()
+  const { data: audioList, isLoading, refetch } = useListTogetherAudio()
+  const createClip = useCreateTogetherAudio()
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const selectedFileRef = useRef<File | null>(null)
+
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: async (res) => {
+      try {
+        const file = selectedFileRef.current
+        const title = file ? file.name.substring(0, file.name.lastIndexOf('.')) || file.name : "Voice Message"
+        const result = await createClip.mutateAsync({
+          data: {
+            title: title,
+            uploaderName: "Family",
+            audioUrl: res.objectPath,
+          },
+        })
+        await refetch()
+        setClip(result)
+        setPhase("prompt")
+      } catch (err) {
+        console.error(err)
+      }
+    },
+  })
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    selectedFileRef.current = file
+    await uploadFile(file)
+  }
 
   const [clip, setClip] = useState<TogetherAudio | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [input, setInput] = useState("")
   const [phase, setPhase] = useState<"idle" | "prompt" | "done">("idle")
-  const [saved, setSaved] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const { stream, isStreaming, streamingText, finalText, error, setError } = useWanisStream()
@@ -359,14 +377,13 @@ function AudioCard({ conversationId }: { conversationId: number | null }) {
     setInput((prev) => (prev ? prev + " " + t : t))
   )
 
-  const hasAudio = audioList && audioList.length > 0
+  const hasAudio = Array.isArray(audioList) && audioList.length > 0
 
   function pickClip() {
-    if (!audioList || audioList.length === 0) return
+    if (!Array.isArray(audioList) || audioList.length === 0) return
     const pick = audioList[Math.floor(Math.random() * audioList.length)]
     setClip(pick)
     setInput("")
-    setSaved(false)
     setError("")
     setPhase("prompt")
     setIsPlaying(false)
@@ -397,21 +414,8 @@ function AudioCard({ conversationId }: { conversationId: number | null }) {
   async function handleSend() {
     if (!conversationId || !clip || !input.trim()) return
     const context = `[Listening to a familiar sound titled: "${clip.title}" (uploaded by: ${clip.uploaderName}). The person listening said: "${input.trim()}"]`
-    await stream(conversationId, context, AUDIO_SYSTEM_PROMPT)
     setPhase("done")
-  }
-
-  async function handleSave() {
-    if (!clip || !input.trim()) return
-    await createMemory.mutateAsync({
-      data: {
-        personName: "Shared memory",
-        relationship: "Together moment",
-        photoUrl: "",
-        notes: `While listening to "${clip.title}": ${input.trim()}`,
-      },
-    })
-    setSaved(true)
+    await stream(conversationId, context, AUDIO_SYSTEM_PROMPT)
   }
 
   const displayText = isStreaming ? streamingText : finalText
@@ -429,10 +433,10 @@ function AudioCard({ conversationId }: { conversationId: number | null }) {
         </div>
         <div>
           <h2 className="font-serif font-semibold text-foreground text-lg leading-tight">
-            A familiar sound
+            {t("familiar_sound")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Songs and stories from your family
+            {t("songs_and_stories")}
           </p>
         </div>
       </div>
@@ -446,24 +450,60 @@ function AudioCard({ conversationId }: { conversationId: number | null }) {
           <div className="text-center py-6 space-y-3">
             <WanisCharacter pose="default" size={64} className="mx-auto opacity-60" />
             <p className="text-base text-muted-foreground leading-relaxed">
-              Ask your family to add a song or story in Family Circle.
+              {t("audio_upload_prompt")}
             </p>
+            <div className="pt-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="audio/*"
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                className="h-12 px-6 rounded-xl border-dashed border-2 hover:bg-accent/5 hover:text-accent hover:border-accent/40"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? t("uploading") : t("upload_audio_btn")}
+              </Button>
+            </div>
           </div>
         )}
 
         {!isLoading && hasAudio && phase === "idle" && (
-          <div className="text-center py-4">
+          <div className="text-center py-4 space-y-4">
             <WanisCharacter pose="waving" size={80} className="mx-auto mb-4" />
-            <p className="text-lg font-serif text-foreground mb-6">
-              Shall we listen to something familiar?
+            <p className="text-lg font-serif text-foreground">
+              {t("shall_we_listen")}
             </p>
-            <Button
-              size="lg"
-              className="h-14 px-10 rounded-2xl text-lg font-semibold bg-accent text-accent-foreground hover:bg-accent/90"
-              onClick={pickClip}
-            >
-              Play something
-            </Button>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
+              <Button
+                size="lg"
+                className="h-14 px-10 rounded-2xl text-lg font-semibold bg-accent text-accent-foreground hover:bg-accent/90"
+                onClick={pickClip}
+              >
+                {t("play_something")}
+              </Button>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="audio/*"
+                className="hidden"
+              />
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-14 px-6 rounded-2xl text-lg font-medium border-dashed border-2"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? t("uploading") : t("upload_audio_btn")}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -488,7 +528,7 @@ function AudioCard({ conversationId }: { conversationId: number | null }) {
                 </button>
                 <div>
                   <p className="font-serif font-semibold text-foreground text-lg">{clip.title}</p>
-                  <p className="text-sm text-muted-foreground">Added by {clip.uploaderName}</p>
+                  <p className="text-sm text-muted-foreground">{t("added_by")} {clip.uploaderName}</p>
                 </div>
               </div>
 
@@ -496,9 +536,25 @@ function AudioCard({ conversationId }: { conversationId: number | null }) {
               <div className="flex gap-3 items-start">
                 <WanisCharacter pose="listening" size={36} className="shrink-0 mt-0.5" />
                 <div className="bg-card rounded-2xl rounded-tl-sm p-4 text-base text-foreground leading-relaxed shadow-sm border border-card-border flex-1">
-                  Does this feel familiar? What does it bring to mind?
+                  {lang === "ar"
+                    ? "ما الذي يذكره لك هذا الصوت أو هذه الأغنية؟"
+                    : lang === "fr"
+                      ? "Que vous rappelle ce son ou cette chanson ?"
+                      : "What does this sound or song bring to mind?"}
                 </div>
               </div>
+
+              {/* User shared memory */}
+              {(phase === "done" || isStreaming) && input.trim() && (
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-accent text-accent-foreground rounded-2xl rounded-tr-sm p-4 text-base leading-relaxed shadow-sm max-w-[85%]">
+                    {input.trim()}
+                  </div>
+                  <div className="w-9 h-9 rounded-full bg-accent/15 flex items-center justify-center shrink-0 text-accent font-bold text-sm">
+                    You
+                  </div>
+                </div>
+              )}
 
               {/* Input */}
               {phase === "prompt" && (
@@ -568,24 +624,9 @@ function AudioCard({ conversationId }: { conversationId: number | null }) {
                 </div>
               )}
 
-              {/* Save + try another */}
+              {/* After Wanis responds — listen to something else */}
               {phase === "done" && finalText && (
                 <div className="flex flex-col gap-3 pt-1">
-                  {!saved ? (
-                    <Button
-                      size="lg"
-                      className="w-full h-14 rounded-2xl text-lg font-serif font-semibold bg-accent text-accent-foreground hover:bg-accent/90"
-                      onClick={handleSave}
-                      disabled={createMemory.isPending}
-                    >
-                      <BookmarkPlus className="w-5 h-5 me-2" />
-                      {createMemory.isPending ? "Saving…" : "Save this memory"}
-                    </Button>
-                  ) : (
-                    <div className="text-center py-2 text-accent font-medium">
-                      ✓ Memory saved
-                    </div>
-                  )}
                   <Button
                     variant="outline"
                     className="w-full h-12 rounded-xl"
@@ -610,21 +651,21 @@ function AudioCard({ conversationId }: { conversationId: number | null }) {
 // ── Main page ──────────────────────────────────────────────────────────────────
 export default function Together() {
   const { data: profile } = useGetProfile()
-  const { data: conversations, refetch: refetchConvos } = useListAnthropicConversations()
-  const createConvo = useCreateAnthropicConversation()
+  const { data: conversations, refetch: refetchConvos } = useListGeminiConversations()
+  const createConvo = useCreateGeminiConversation()
   const [conversationId, setConversationId] = useState<number | null>(null)
   const didInitRef = useRef(false)
 
   // Set up or resume a Together conversation for today
   useEffect(() => {
-    if (!conversations || didInitRef.current) return
+    if (!Array.isArray(conversations) || didInitRef.current) return
     const todayKey = `Together — ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`
     const existing = conversations.find((c) => c.title === todayKey)
     if (existing) {
       setConversationId(existing.id)
       didInitRef.current = true
     } else {
-      createConvo.mutateAsync({ data: { title: todayKey } }).then((res) => {
+      createConvo.mutateAsync({ data: { title: todayKey } }).then((res: any) => {
         setConversationId(res.id)
         refetchConvos()
         didInitRef.current = true

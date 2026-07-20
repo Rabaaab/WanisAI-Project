@@ -24,8 +24,8 @@ tags:
     description: Guardian mode - Hajj/Umrah safety
   - name: memory
     description: Memory companion - photo lookup
-  - name: anthropic
-    description: Anthropic AI chat operations
+  - name: gemini
+    description: Gemini AI chat operations
 paths:
   /storage/uploads/request-url:
     post:
@@ -239,14 +239,131 @@ paths:
           schema:
             type: integer
       responses:
-        "204":
-          description: Deleted
         "404":
           description: Not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+
+  /medications:
+    get:
+      operationId: listMedications
+      tags: [medications]
+      summary: List all medications
+      responses:
+        "200":
+          description: List of medications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Medication"
+    post:
+      operationId: addMedication
+      tags: [medications]
+      summary: Add a medication manually
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicationInput"
+      responses:
+        "201":
+          description: Created medication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medication"
+
+  /medications/{id}:
+    delete:
+      operationId: deleteMedication
+      tags: [medications]
+      summary: Remove a medication
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted medication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medication"
+        "404":
+          description: Not found
+
+  /medications/extract-vision:
+    post:
+      operationId: extractMedicationVision
+      tags: [medications]
+      summary: Extract medication details from an uploaded image
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicationVisionExtractRequest"
+      responses:
+        "200":
+          description: Extracted medication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicationVisionExtractResponse"
+
+  /medications/analyze:
+    post:
+      operationId: analyzeMedications
+      tags: [medications]
+      summary: Analyze current medications for ACB burden
+      responses:
+        "200":
+          description: AI generated explanation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicationAnalyzeResponse"
+
+  /doctor-briefs:
+    post:
+      operationId: generateDoctorBrief
+      tags: [doctor-briefs]
+      summary: Generate a new Doctor Brief document
+      responses:
+        "201":
+          description: Brief generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DoctorBrief"
+
+  /doctor-briefs/share/{key}:
+    get:
+      operationId: getSharedDoctorBrief
+      tags: [doctor-briefs]
+      summary: Get a shared Doctor Brief by its secure key
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Shared Doctor Brief
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DoctorBrief"
+        "404":
+          description: Brief not found
 
   /routines:
     get:
@@ -374,6 +491,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CheckInDashboard"
+
+  /check-ins/family-letter:
+    get:
+      operationId: getLatestFamilyLetter
+      tags: [checkins]
+      summary: Get the most recently generated family letter
+      responses:
+        "200":
+          description: Latest family letter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyLetterResponse"
+
+    post:
+      operationId: generateFamilyLetter
+      tags: [checkins]
+      summary: Generate a weekly letter to the family using AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FamilyLetterInput"
+      responses:
+        "200":
+          description: Generated family letter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyLetterResponse"
 
   /check-ins/{id}:
     get:
@@ -592,10 +740,10 @@ paths:
         "404":
           description: Not found
 
-  /anthropic/conversations:
+  /gemini/conversations:
     get:
-      operationId: listAnthropicConversations
-      tags: [anthropic]
+      operationId: listGeminiConversations
+      tags: [gemini]
       summary: List all conversations
       responses:
         "200":
@@ -605,29 +753,29 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/AnthropicConversation"
+                  $ref: "#/components/schemas/GeminiConversation"
     post:
-      operationId: createAnthropicConversation
-      tags: [anthropic]
+      operationId: createGeminiConversation
+      tags: [gemini]
       summary: Create a new conversation
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AnthropicConversationInput"
+              $ref: "#/components/schemas/GeminiConversationInput"
       responses:
         "201":
           description: Created conversation
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnthropicConversation"
+                $ref: "#/components/schemas/GeminiConversation"
 
-  /anthropic/conversations/{id}:
+  /gemini/conversations/{id}:
     get:
-      operationId: getAnthropicConversation
-      tags: [anthropic]
+      operationId: getGeminiConversation
+      tags: [gemini]
       summary: Get conversation with messages
       parameters:
         - name: id
@@ -641,7 +789,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnthropicConversationWithMessages"
+                $ref: "#/components/schemas/GeminiConversationWithMessages"
         "404":
           description: Not found
           content:
@@ -649,8 +797,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
     delete:
-      operationId: deleteAnthropicConversation
-      tags: [anthropic]
+      operationId: deleteGeminiConversation
+      tags: [gemini]
       summary: Delete a conversation
       parameters:
         - name: id
@@ -668,10 +816,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
-  /anthropic/conversations/{id}/messages:
+  /gemini/conversations/{id}/messages:
     get:
-      operationId: listAnthropicMessages
-      tags: [anthropic]
+      operationId: listGeminiMessages
+      tags: [gemini]
       summary: List messages in a conversation
       parameters:
         - name: id
@@ -687,10 +835,10 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/AnthropicMessage"
+                  $ref: "#/components/schemas/GeminiMessage"
     post:
-      operationId: sendAnthropicMessage
-      tags: [anthropic]
+      operationId: sendGeminiMessage
+      tags: [gemini]
       summary: Send a message and receive an AI response (SSE stream)
       parameters:
         - name: id
@@ -703,12 +851,47 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AnthropicMessageInput"
+              $ref: "#/components/schemas/GeminiMessageInput"
       responses:
         "200":
           description: SSE stream of assistant response chunks
           content:
             text/event-stream: {}
+
+  /life-story:
+    get:
+      operationId: listLifeStoryEntries
+      tags: [lifestory]
+      summary: Get all life story entries
+      responses:
+        "200":
+          description: List of life story entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LifeStoryEntry"
+
+  /life-story/entry:
+    post:
+      operationId: createLifeStoryEntry
+      tags: [lifestory]
+      summary: Add a new life story entry manually or via hook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LifeStoryEntryInput"
+      responses:
+        "201":
+          description: Created life story entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LifeStoryEntry"
+
 
 components:
   schemas:
@@ -878,6 +1061,8 @@ components:
           type: ["string", "null"]
         frequency:
           type: string
+        appointmentDate:
+          type: ["string", "null"]
         createdAt:
           type: string
           format: date-time
@@ -898,6 +1083,8 @@ components:
         time:
           type: string
         frequency:
+          type: string
+        appointmentDate:
           type: string
       required:
         - name
@@ -1116,7 +1303,7 @@ components:
         - relationship
         - photoUrl
 
-    AnthropicConversation:
+    GeminiConversation:
       type: object
       properties:
         id:
@@ -1131,7 +1318,7 @@ components:
         - title
         - createdAt
 
-    AnthropicMessage:
+    GeminiMessage:
       type: object
       properties:
         id:
@@ -1152,7 +1339,7 @@ components:
         - content
         - createdAt
 
-    AnthropicConversationInput:
+    GeminiConversationInput:
       type: object
       properties:
         title:
@@ -1160,12 +1347,14 @@ components:
       required:
         - title
 
-    AnthropicMessageInput:
+    GeminiMessageInput:
       type: object
       properties:
         content:
           type: string
         systemPrompt:
+          type: string
+        lang:
           type: string
       required:
         - content
@@ -1208,7 +1397,7 @@ components:
         - audioUrl
         - uploaderName
 
-    AnthropicConversationWithMessages:
+    GeminiConversationWithMessages:
       type: object
       properties:
         id:
@@ -1221,7 +1410,7 @@ components:
         messages:
           type: array
           items:
-            $ref: "#/components/schemas/AnthropicMessage"
+            $ref: "#/components/schemas/GeminiMessage"
       required:
         - id
         - title
@@ -1251,3 +1440,138 @@ components:
           type: string
         metadata:
           $ref: '#/components/schemas/UploadUrlRequest'
+
+    FamilyLetter:
+      type: object
+      required: [id, content, lang, createdAt]
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        lang:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    FamilyLetterResponse:
+      type: object
+      required: [letter]
+      properties:
+        letter:
+          type: string
+
+    LifeStoryEntry:
+      type: object
+      required: [id, source, content, createdAt]
+      properties:
+        id:
+          type: integer
+        source:
+          type: string
+          enum: [checkin, conversation, together, manual]
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    LifeStoryEntryInput:
+      type: object
+      required: [source, content]
+      properties:
+        source:
+          type: string
+          enum: [checkin, conversation, together, manual]
+        content:
+          type: string
+
+    FamilyLetterInput:
+      type: object
+      required: [lang]
+      properties:
+        lang:
+          type: string
+
+    Medication:
+      type: object
+      required: [id, name, dosage, frequency, acbScore, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        acbScore:
+          type: integer
+        reason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    MedicationInput:
+      type: object
+      required: [name, dosage, frequency]
+      properties:
+        name:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        reason:
+          type: string
+          nullable: true
+
+    MedicationVisionExtractRequest:
+      type: object
+      required: [imageUrl]
+      properties:
+        imageUrl:
+          type: string
+
+    MedicationVisionExtractResponse:
+      type: object
+      required: [name, dosage, frequency, acbScore]
+      properties:
+        name:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        acbScore:
+          type: integer
+
+    MedicationAnalyzeResponse:
+      type: object
+      required: [explanation]
+      properties:
+        explanation:
+          type: string
+
+    DoctorBrief:
+      type: object
+      required: [id, patientName, medicationFindings, checkInSummary, acbScore, key, createdAt]
+      properties:
+        id:
+          type: integer
+        patientName:
+          type: string
+        medicationFindings:
+          type: string
+        checkInSummary:
+          type: string
+        acbScore:
+          type: integer
+        key:
+          type: string
+        createdAt:
+          type: string
+          format: date-time

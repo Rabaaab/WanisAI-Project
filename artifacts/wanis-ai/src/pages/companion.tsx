@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react"
 import {
-  useListAnthropicConversations,
-  useCreateAnthropicConversation,
-  useListAnthropicMessages,
+  useListGeminiConversations,
+  useCreateGeminiConversation,
+  useListGeminiMessages,
 } from "@workspace/api-client-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Mic, MicOff, Send, AlertCircle } from "lucide-react"
+import { Mic, MicOff, Send } from "lucide-react"
 import { motion } from "framer-motion"
 import { WanisCharacter } from "@/components/WanisCharacter"
 import { useLang } from "@/contexts/LanguageContext"
@@ -19,13 +19,13 @@ const getSR = () =>
 const SR_LANG: Record<string, string> = { en: "en-US", ar: "ar-SA", fr: "fr-FR" }
 
 export default function Companion() {
-  const { t, lang } = useLang()
+  const { t, lang, setLang } = useLang()
   const { data: conversations, refetch: refetchConvos } =
-    useListAnthropicConversations()
-  const createConvo = useCreateAnthropicConversation()
+    useListGeminiConversations()
+  const createConvo = useCreateGeminiConversation()
 
   const [activeId, setActiveId] = useState<number | null>(null)
-  const { data: messages, refetch: refetchMessages } = useListAnthropicMessages(
+  const { data: messages, refetch: refetchMessages } = useListGeminiMessages(
     activeId || 0,
     { query: { enabled: !!activeId, queryKey: ["messages", activeId] } }
   )
@@ -34,7 +34,6 @@ export default function Companion() {
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamingContent, setStreamingContent] = useState("")
   const [isListening, setIsListening] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
   const [srAvailable] = useState(() => !!getSR())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const didInitRef = useRef(false)
@@ -43,7 +42,7 @@ export default function Companion() {
 
   // Auto-create or resume today's conversation
   useEffect(() => {
-    if (!conversations || didInitRef.current) return
+    if (!Array.isArray(conversations) || didInitRef.current) return
 
     const today = new Date().toDateString()
     const todayConvo = conversations.find(
@@ -61,12 +60,12 @@ export default function Companion() {
       })
       createConvo
         .mutateAsync({ data: { title: todayLabel } })
-        .then((res) => {
+        .then((res: any) => {
           setActiveId(res.id)
           refetchConvos()
           didInitRef.current = true
         })
-        .catch(() => setErrorMessage("Could not start a conversation. Please refresh."))
+        .catch((err) => { console.error("Failed to create conversation", err) })
     }
   }, [conversations])
 
@@ -80,26 +79,25 @@ export default function Companion() {
     setInput("")
     setIsStreaming(true)
     setStreamingContent("")
-    setErrorMessage("")
 
     try {
       const res = await fetch(
-        `${import.meta.env.BASE_URL}api/anthropic/conversations/${activeId}/messages`,
+        `${import.meta.env.BASE_URL}api/gemini/conversations/${activeId}/messages`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: currentInput }),
+          body: JSON.stringify({ content: currentInput, lang }),
         }
       )
 
       if (!res.ok) {
-        setErrorMessage(`Server error (${res.status}). Please try again.`)
+        console.error(`Server error (${res.status}) when sending message`)
         setIsStreaming(false)
         return
       }
 
       if (!res.body) {
-        setErrorMessage("No response received. Please try again.")
+        console.error("No response body from server when sending message")
         setIsStreaming(false)
         return
       }
@@ -117,7 +115,7 @@ export default function Companion() {
             try {
               const data = JSON.parse(line.slice(6))
               if (data.error) {
-                setErrorMessage(data.error)
+                console.warn("Stream error chunk:", data.error)
               } else if (data.content) {
                 gotContent = true
                 setStreamingContent((prev) => prev + data.content)
@@ -127,14 +125,13 @@ export default function Companion() {
         }
       }
 
-      if (!gotContent && !errorMessage) {
-        setErrorMessage("No response from Wanis. Check the API key is configured.")
+      if (!gotContent) {
+        console.warn("No content received from stream; backend fallback will be used if available.")
       }
 
       refetchMessages()
     } catch (e) {
       console.error(e)
-      setErrorMessage("Could not connect to Wanis. Check your network and try again.")
     } finally {
       setIsStreaming(false)
       setStreamingContent("")
@@ -175,39 +172,42 @@ export default function Companion() {
     setIsListening(true)
   }
 
-  const hasMessages = messages && messages.length > 0
+  const hasMessages = Array.isArray(messages) && messages.length > 0
   const showWelcome = activeId && !hasMessages && !isStreaming
 
   return (
     <div className="h-[100dvh] pb-[80px] md:pb-0 flex flex-col bg-background">
       {/* Header */}
       <div className="shrink-0 px-6 py-4 border-b border-border bg-card/60">
-        <div className="flex items-center gap-3 max-w-2xl mx-auto">
-          <WanisCharacter pose={isStreaming ? "listening" : "default"} size={44} />
-          <div>
-            <h1 className="font-serif font-semibold text-foreground text-lg leading-tight">
-              {t("companion_title")}
-            </h1>
-            <p className="text-xs text-muted-foreground font-sans">
-              {isStreaming ? t("wanis_status") : t("companion_subtitle")}
-            </p>
+        <div className="flex items-center justify-between max-w-2xl mx-auto">
+          <div className="flex items-center gap-3">
+            <WanisCharacter pose={isStreaming ? "listening" : "default"} size={44} />
+            <div>
+              <h1 className="font-serif font-semibold text-foreground text-lg leading-tight">
+                {t("companion_title")}
+              </h1>
+              <p className="text-xs text-muted-foreground font-sans">
+                {isStreaming ? t("wanis_status") : t("companion_subtitle")}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
+            {(["en", "ar", "fr"] as const).map((l) => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                className={`text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors ${
+                  lang === l
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {l === "en" ? "EN" : l === "ar" ? "ع" : "FR"}
+              </button>
+            ))}
           </div>
         </div>
       </div>
-
-      {/* Error banner */}
-      {errorMessage && (
-        <div className="shrink-0 mx-4 mt-3 flex items-start gap-2 bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-sm text-destructive font-sans">
-          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>{errorMessage}</span>
-          <button
-            onClick={() => setErrorMessage("")}
-            className="ms-auto text-destructive/60 hover:text-destructive text-xs underline"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
@@ -240,7 +240,7 @@ export default function Companion() {
           </motion.div>
         ) : (
           <div className="p-4 md:p-6 space-y-5 max-w-2xl mx-auto">
-            {messages?.map((msg) => (
+            {Array.isArray(messages) && messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}

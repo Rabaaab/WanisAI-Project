@@ -91,17 +91,6 @@ export default function CheckIn() {
     setIsStreaming(true)
     setAnalysisStep(0)
 
-    // Advance through visible status steps
-    let step = 0
-    stepTimerRef.current = setInterval(() => {
-      step++
-      if (step < ANALYSIS_STEPS.length) setAnalysisStep(step)
-      else {
-        clearInterval(stepTimerRef.current!)
-        stepTimerRef.current = null
-      }
-    }, 2200)
-
     try {
       const res = await fetch(
         `${import.meta.env.BASE_URL}api/check-ins/${id}/analyze`,
@@ -118,6 +107,10 @@ export default function CheckIn() {
           if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.slice(6))
+              if (data.status) {
+                const stepIdx = ANALYSIS_STEPS.indexOf(data.status)
+                if (stepIdx !== -1) setAnalysisStep(stepIdx)
+              }
               if (data.done) break
               if (data.content) setStreamingAnalysis((prev) => prev + data.content)
             } catch (_) {}
@@ -127,8 +120,9 @@ export default function CheckIn() {
     } catch (e) {
       console.error(e)
     } finally {
-      if (stepTimerRef.current) clearInterval(stepTimerRef.current)
       setIsStreaming(false)
+      // Advance to the final step just in case
+      setAnalysisStep(ANALYSIS_STEPS.length)
     }
   }
 
@@ -294,7 +288,7 @@ export default function CheckIn() {
         </CardContent>
       </Card>
 
-      {checkIns && checkIns.length > 0 && (
+      {Array.isArray(checkIns) && checkIns.length > 0 && (
         <div className="pt-8 space-y-4">
           <h3 className="text-xl font-serif font-semibold text-foreground">
             {t("past_checkins")}

@@ -8,6 +8,19 @@ const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "")
 export function photoSrc(objectPath: string | null | undefined): string | undefined {
   if (!objectPath) return undefined
   if (objectPath.startsWith("http")) return objectPath
+  if (
+    objectPath === "/female_avatar.png" ||
+    objectPath === "/male_avatar.png" ||
+    objectPath === "female_avatar.png" ||
+    objectPath === "male_avatar.png" ||
+    objectPath === "/female_avatar_non_muslim.png" ||
+    objectPath === "/male_avatar_non_muslim.png" ||
+    objectPath === "female_avatar_non_muslim.png" ||
+    objectPath === "male_avatar_non_muslim.png"
+  ) {
+    const cleanPath = objectPath.startsWith("/") ? objectPath : `/${objectPath}`
+    return `${BASE_URL}${cleanPath}`
+  }
   return `${BASE_URL}/api/storage${objectPath}`
 }
 
@@ -98,6 +111,58 @@ export function PhotoUploader({
             <span className="text-xs opacity-70">or drag and drop here</span>
           </span>
         </button>
+      )}
+
+      {!preview && (
+        <div className="pt-2">
+          <p className="text-xs text-center text-muted-foreground mb-3">Or choose an avatar</p>
+          <div className="grid grid-cols-4 gap-3 max-w-[280px] mx-auto">
+            <button
+              type="button"
+              onClick={() => {
+                setPreview("/male_avatar.png")
+                onChange("/male_avatar.png")
+              }}
+              title="Muslim Male"
+              className="w-14 h-14 rounded-full overflow-hidden border-2 border-border hover:border-primary transition-all focus:outline-none focus:border-primary mx-auto"
+            >
+              <img src="/male_avatar.png" alt="Male Avatar" className="w-full h-full object-cover" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPreview("/female_avatar.png")
+                onChange("/female_avatar.png")
+              }}
+              title="Muslim Female"
+              className="w-14 h-14 rounded-full overflow-hidden border-2 border-border hover:border-primary transition-all focus:outline-none focus:border-primary mx-auto"
+            >
+              <img src="/female_avatar.png" alt="Female Avatar" className="w-full h-full object-cover" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPreview("/male_avatar_non_muslim.png")
+                onChange("/male_avatar_non_muslim.png")
+              }}
+              title="Male"
+              className="w-14 h-14 rounded-full overflow-hidden border-2 border-border hover:border-primary transition-all focus:outline-none focus:border-primary mx-auto"
+            >
+              <img src="/male_avatar_non_muslim.png" alt="Male Avatar" className="w-full h-full object-cover" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPreview("/female_avatar_non_muslim.png")
+                onChange("/female_avatar_non_muslim.png")
+              }}
+              title="Female"
+              className="w-14 h-14 rounded-full overflow-hidden border-2 border-border hover:border-primary transition-all focus:outline-none focus:border-primary mx-auto"
+            >
+              <img src="/female_avatar_non_muslim.png" alt="Female Avatar" className="w-full h-full object-cover" />
+            </button>
+          </div>
+        </div>
       )}
 
       {error && (

@@ -7,3 +7,8 @@ export * from "./memory_photos";
 export * from "./conversations";
 export * from "./messages";
 export * from "./together_audio";
+export * from "./family_letters";
+export * from "./life_story_entries";
+export * from "./medications";
+export * from "./doctor_briefs";
+

@@ -12,4 +12,5 @@ export interface RoutineInput {
   description?: string;
   time?: string;
   frequency: string;
+  appointmentDate?: string;
 }

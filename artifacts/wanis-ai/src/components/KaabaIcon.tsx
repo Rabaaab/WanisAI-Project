@@ -1,10 +1,6 @@
 import { SVGProps } from "react"
 import { cn } from "@/lib/utils"
 
-/**
- * Simplified Kaaba silhouette icon — used for the Hajj/Umrah Rufqa nav item.
- * Monochromatic; colour it via `className` (e.g. text-[#2F6D4F]).
- */
 export function KaabaIcon({
   className,
   ...props
@@ -12,21 +8,16 @@ export function KaabaIcon({
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
       className={cn("shrink-0", className)}
       {...props}
     >
-      {/* Roof ledge */}
-      <rect x="3" y="7" width="18" height="1.8" rx="0.4" />
-      {/* Main body */}
-      <rect x="4.5" y="8.8" width="15" height="11.2" />
-      {/* Kiswa band — decorative stripe near the top (lighter inset) */}
-      <rect x="4.5" y="9.8" width="15" height="2.6" fill="white" opacity="0.22" />
-      {/* Door — arched rectangle, lighter cutout */}
-      <rect x="9.5" y="15.5" width="5" height="4.5" rx="0.6" fill="white" opacity="0.28" />
-      {/* Base platform */}
-      <rect x="3" y="20" width="18" height="1.6" rx="0.4" opacity="0.75" />
+      <path d="M4 21V5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V21H4Z" fill="#1A1A1A" />
+      <path d="M4 8H20V10H4V8Z" fill="#D4AF37" />
+      <path d="M4 11H20V11.5H4V11Z" fill="#D4AF37" />
+      <path d="M10 15.5C10 14.6716 10.6716 14 11.5 14H12.5C13.3284 14 14 14.6716 14 15.5V21H10V15.5Z" fill="#D4AF37" />
+      <path d="M12 14V21" stroke="#1A1A1A" strokeWidth="0.5" />
     </svg>
   )
 }

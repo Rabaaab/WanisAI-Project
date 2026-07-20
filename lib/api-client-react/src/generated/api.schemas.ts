@@ -126,6 +126,8 @@ export interface Routine {
   /** @nullable */
   time?: string | null;
   frequency: string;
+  /** @nullable */
+  appointmentDate?: string | null;
   createdAt: string;
 }
 
@@ -135,6 +137,7 @@ export interface RoutineInput {
   description?: string;
   time?: string;
   frequency: string;
+  appointmentDate?: string;
 }
 
 export interface RoutineUpdate {
@@ -248,13 +251,13 @@ export interface MemoryPhotoInput {
   notes?: string;
 }
 
-export interface AnthropicConversation {
+export interface GeminiConversation {
   id: number;
   title: string;
   createdAt: string;
 }
 
-export interface AnthropicMessage {
+export interface GeminiMessage {
   id: number;
   conversationId: number;
   role: string;
@@ -262,13 +265,14 @@ export interface AnthropicMessage {
   createdAt: string;
 }
 
-export interface AnthropicConversationInput {
+export interface GeminiConversationInput {
   title: string;
 }
 
-export interface AnthropicMessageInput {
+export interface GeminiMessageInput {
   content: string;
   systemPrompt?: string;
+  lang?: string;
 }
 
 export interface TogetherAudio {
@@ -288,11 +292,11 @@ export interface TogetherAudioInput {
   uploaderName: string;
 }
 
-export interface AnthropicConversationWithMessages {
+export interface GeminiConversationWithMessages {
   id: number;
   title: string;
   createdAt: string;
-  messages: AnthropicMessage[];
+  messages: GeminiMessage[];
 }
 
 export interface UploadUrlRequest {
@@ -308,5 +312,94 @@ export interface UploadUrlResponse {
   uploadURL: string;
   objectPath: string;
   metadata?: UploadUrlRequest;
+}
+
+export interface FamilyLetter {
+  id: number;
+  content: string;
+  lang: string;
+  createdAt: string;
+}
+
+export interface FamilyLetterResponse {
+  letter: string;
+}
+
+export type LifeStoryEntrySource = typeof LifeStoryEntrySource[keyof typeof LifeStoryEntrySource];
+
+
+export const LifeStoryEntrySource = {
+  checkin: 'checkin',
+  conversation: 'conversation',
+  together: 'together',
+  manual: 'manual',
+} as const;
+
+export interface LifeStoryEntry {
+  id: number;
+  source: LifeStoryEntrySource;
+  content: string;
+  createdAt: string;
+}
+
+export type LifeStoryEntryInputSource = typeof LifeStoryEntryInputSource[keyof typeof LifeStoryEntryInputSource];
+
+
+export const LifeStoryEntryInputSource = {
+  checkin: 'checkin',
+  conversation: 'conversation',
+  together: 'together',
+  manual: 'manual',
+} as const;
+
+export interface LifeStoryEntryInput {
+  source: LifeStoryEntryInputSource;
+  content: string;
+}
+
+export interface FamilyLetterInput {
+  lang: string;
+}
+
+export interface Medication {
+  id: number;
+  name: string;
+  dosage: string;
+  frequency: string;
+  acbScore: number;
+  reason?: string | null;
+  createdAt: string;
+}
+
+export interface MedicationInput {
+  name: string;
+  dosage: string;
+  frequency: string;
+  reason?: string | null;
+}
+
+export interface MedicationVisionExtractRequest {
+  imageUrl: string;
+}
+
+export interface MedicationVisionExtractResponse {
+  name: string;
+  dosage: string;
+  frequency: string;
+  acbScore: number;
+}
+
+export interface MedicationAnalyzeResponse {
+  explanation: string;
+}
+
+export interface DoctorBrief {
+  id: number;
+  patientName: string;
+  medicationFindings: string;
+  checkInSummary: string;
+  acbScore: number;
+  key: string;
+  createdAt: string;
 }
 

@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, cp } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -13,6 +13,23 @@ const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
+  
+  // Create distDir
+  await rm(distDir, { recursive: true, force: true }).catch(() => {});
+  // Copy PGlite assets to distDir
+  try {
+    const pgliteEntry = globalThis.require.resolve("@electric-sql/pglite");
+    const pgliteDist = path.dirname(pgliteEntry);
+    const filesToCopy = ["pglite.wasm", "initdb.wasm", "pglite.data"];
+    for (const file of filesToCopy) {
+      const src = path.resolve(pgliteDist, file);
+      const dest = path.resolve(distDir, file);
+      await cp(src, dest, { force: true });
+    }
+    console.log("✅ Copied PGlite assets successfully.");
+  } catch (err) {
+    console.warn("⚠️ Failed to copy PGlite assets:", err);
+  }
 
   await esbuild({
     entryPoints: [path.resolve(artifactDir, "src/index.ts")],

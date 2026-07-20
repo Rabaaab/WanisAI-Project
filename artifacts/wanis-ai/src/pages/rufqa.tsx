@@ -144,6 +144,17 @@ function LostOverlay({
           )}
         </div>
 
+        {/* Heat Safety Warning */}
+        <div className="w-full bg-amber-50 rounded-2xl p-4 border border-amber-200 shadow-sm flex items-start gap-3">
+          <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-amber-800">Safety First</p>
+            <p className="text-amber-700 text-sm mt-1">
+              Stay in the shade. Drink water immediately. Do not walk long distances in the sun. Wait for help to come to you.
+            </p>
+          </div>
+        </div>
+
         {/* Meeting point */}
         <div className="w-full bg-white rounded-2xl p-5 shadow-sm space-y-1">
           <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Meet here</p>
@@ -214,12 +225,12 @@ function LostOverlay({
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function Guardian() {
+export default function Rufqa() {
   const { t } = useLang()
 
   useEffect(() => {
-    document.body.classList.add("guardian-theme")
-    return () => document.body.classList.remove("guardian-theme")
+    document.body.classList.add("rufqa-theme")
+    return () => document.body.classList.remove("rufqa-theme")
   }, [])
 
   const { data: profile, isLoading, refetch } = useGetGuardianProfile()
@@ -300,6 +311,9 @@ export default function Guardian() {
         >
           {t("setup_rufqa")}
         </Button>
+        <p className="text-sm text-muted-foreground mt-8 max-w-md bg-card/50 p-4 rounded-xl border border-border">
+          <strong>Safety Disclaimer:</strong> WanisAI is not a medical device. This feature provides location sharing and communication aids, but does not replace professional supervision, medical emergency services, or official authorities.
+        </p>
       </div>
     )
   }
@@ -331,6 +345,10 @@ export default function Guardian() {
             <h2 className="text-xl font-serif font-bold">{t("rufqa_active")}</h2>
             <p className="text-primary-foreground/90 mt-1">{t("rufqa_desc")}</p>
           </div>
+        </div>
+
+        <div className="bg-primary/5 text-sm text-foreground/80 p-4 rounded-xl border border-primary/20">
+          <strong>Safety Disclaimer:</strong> WanisAI is not a medical device. This feature provides location sharing and communication aids, but does not replace professional supervision, medical emergency services, or official authorities.
         </div>
 
         {/* ── I'm Lost button ── */}

@@ -4,6 +4,9 @@ import {
   RequestUploadUrlResponse,
 } from '@workspace/api-zod';
 import { Router, type IRouter, type Request, type Response } from 'express';
+import fs from 'fs';
+import path from 'path';
+import { randomUUID } from 'crypto';
 
 import { ObjectPermission } from '../lib/objectAcl';
 import {
@@ -13,6 +16,32 @@ import {
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
+
+// Local directory for storage fallback in dev
+const localStorageDir = path.resolve(process.cwd(), 'local_storage');
+if (!fs.existsSync(localStorageDir)) {
+  fs.mkdirSync(localStorageDir, { recursive: true });
+}
+
+// Local upload endpoint for PUT uploads
+router.put('/storage/uploads/local/:objectId', async (req: Request, res: Response) => {
+  try {
+    const { objectId } = req.params;
+    const destPath = path.join(localStorageDir, objectId);
+    const writeStream = fs.createWriteStream(destPath);
+    req.pipe(writeStream);
+    writeStream.on('finish', () => {
+      res.status(200).json({ success: true });
+    });
+    writeStream.on('error', (err) => {
+      req.log.error(err, 'Error writing local file');
+      res.status(500).json({ error: 'Failed to write file' });
+    });
+  } catch (error) {
+    req.log.error(error, 'Error in local upload');
+    res.status(500).json({ error: 'Upload failed' });
+  }
+});
 
 function hasAuthenticatedSession(
   req: Request,
@@ -47,6 +76,20 @@ router.post(
     try {
       const { name, size, contentType } = parsed.data;
 
+      if (!process.env.REPLIT_ENV) {
+        const objectId = randomUUID();
+        const uploadURL = `/api/storage/uploads/local/${objectId}`;
+        const objectPath = `/objects/${objectId}`;
+        res.json(
+          RequestUploadUrlResponse.parse({
+            uploadURL,
+            objectPath,
+            metadata: { name, size, contentType },
+          }),
+        );
+        return;
+      }
+
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
       const objectPath =
         objectStorageService.normalizeObjectEntityPath(uploadURL);
@@ -78,6 +121,17 @@ router.get(
     try {
       const raw = req.params.filePath;
       const filePath = Array.isArray(raw) ? raw.join('/') : raw;
+
+      if (!process.env.REPLIT_ENV) {
+        const destPath = path.join(localStorageDir, filePath);
+        if (fs.existsSync(destPath)) {
+          res.sendFile(destPath);
+          return;
+        }
+        res.status(404).json({ error: 'File not found' });
+        return;
+      }
+
       const file = await objectStorageService.searchPublicObject(filePath);
       if (!file) {
         res.status(404).json({ error: 'File not found' });
@@ -115,6 +169,17 @@ router.get('/storage/objects/*path', async (req: Request, res: Response) => {
   try {
     const raw = req.params.path;
     const wildcardPath = Array.isArray(raw) ? raw.join('/') : raw;
+
+    if (!process.env.REPLIT_ENV) {
+      const destPath = path.join(localStorageDir, wildcardPath);
+      if (fs.existsSync(destPath)) {
+        res.sendFile(destPath);
+        return;
+      }
+      res.status(404).json({ error: 'File not found' });
+      return;
+    }
+
     const objectPath = `/objects/${wildcardPath}`;
     const objectFile =
       await objectStorageService.getObjectEntityFile(objectPath);

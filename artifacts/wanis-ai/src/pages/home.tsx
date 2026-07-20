@@ -1,8 +1,8 @@
 import { useLocation } from "wouter"
-import { useGetProfile, useGetCheckInDashboard } from "@workspace/api-client-react"
+import { useGetProfile, useGetCheckInDashboard, useListRoutines } from "@workspace/api-client-react"
 import { Button } from "@/components/ui/button"
 import { Link } from "wouter"
-import { ArrowRight, HeartPulse } from "lucide-react"
+import { ArrowRight, HeartPulse, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
 import { KaabaIcon } from "@/components/KaabaIcon"
 import { useMode } from "@/contexts/ModeContext"
@@ -267,6 +267,7 @@ function IllustrationTogether() {
 export default function Home() {
   const { data: profile, isLoading: isProfileLoading } = useGetProfile()
   const { data: dashboard } = useGetCheckInDashboard()
+  const { data: routines } = useListRoutines()
   const [_, setLocation] = useLocation()
   const { mode, setMode } = useMode()
   const { t } = useLang()
@@ -312,6 +313,14 @@ export default function Home() {
   const personalTiles = tiles.slice(0, 4)
   const displayTiles = isPersonal ? personalTiles : tiles
 
+  // Check for upcoming appointments tomorrow
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowStr = tomorrow.toISOString().split("T")[0]
+  const tomorrowAppointment = Array.isArray(routines)
+    ? routines.find((r) => r.appointmentDate === tomorrowStr)
+    : null
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -319,6 +328,29 @@ export default function Home() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="p-5 md:p-10 max-w-2xl mx-auto pb-28 md:pb-12 space-y-6"
     >
+      {tomorrowAppointment && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-amber-500/10 border border-amber-500/20 text-amber-800 rounded-[1.5rem] p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-sm">Upcoming Appointment Tomorrow</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Appointment: <strong className="text-amber-900">{tomorrowAppointment.name}</strong>. Your Doctor Brief summary is ready to export and share.
+              </p>
+            </div>
+          </div>
+          <Link href="/doctor-briefs">
+            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 font-semibold px-4 py-2 rounded-xl">
+              Get Brief
+            </Button>
+          </Link>
+        </motion.div>
+      )}
+
       {/* ── Hero pass card ── */}
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
@@ -435,7 +467,7 @@ export default function Home() {
       </motion.div>
 
       {/* ── Recent mood trend — family mode only ── */}
-      {!isPersonal && dashboard && dashboard.recentMoods.length > 0 && (
+      {!isPersonal && dashboard?.recentMoods && dashboard.recentMoods.length > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

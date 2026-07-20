@@ -90,7 +90,7 @@
   --radius: 0.75rem;
 }
 
-.guardian-theme {
+.rufqa-theme {
   /* Deep green #2F6D4F */
   --primary: 151 39% 31%;
   /* Forest #1F4A36 */
@@ -308,4 +308,13 @@
   background: hsl(210 32% 52% / 0.10);
   border-color: hsl(210 32% 52% / 0.25);
   color: hsl(210 32% 30%);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

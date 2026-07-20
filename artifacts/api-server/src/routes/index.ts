@@ -5,10 +5,14 @@ import profileRouter from "./profile";
 import familyRouter from "./family";
 import routinesRouter from "./routines";
 import checkInsRouter from "./check-ins";
-import guardianRouter from "./guardian";
+import rufqaRouter from "./rufqa";
 import memoryRouter from "./memory";
-import anthropicRouter from "./anthropic";
+import geminiRouter from "./gemini";
 import togetherRouter from "./together";
+import lifeStoryRouter from "./life-story";
+import medicationsRouter from "./medications";
+import doctorBriefsRouter from "./doctor-briefs";
+import demoRouter from "./demo";
 
 const router: IRouter = Router();
 
@@ -18,9 +22,13 @@ router.use(profileRouter);
 router.use(familyRouter);
 router.use(routinesRouter);
 router.use(checkInsRouter);
-router.use(guardianRouter);
+router.use(rufqaRouter);
 router.use(memoryRouter);
-router.use(anthropicRouter);
+router.use(geminiRouter);
 router.use(togetherRouter);
+router.use(lifeStoryRouter);
+router.use(medicationsRouter);
+router.use(doctorBriefsRouter);
+router.use(demoRouter);
 
 export default router;

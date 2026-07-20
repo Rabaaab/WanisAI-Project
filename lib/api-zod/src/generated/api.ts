@@ -225,6 +225,115 @@ export const DeleteFamilyMemberResponse = zod.void()
 
 
 /**
+ * @summary List all medications
+ */
+export const ListMedicationsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "dosage": zod.string(),
+  "frequency": zod.string(),
+  "acbScore": zod.number(),
+  "reason": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+export const ListMedicationsResponse = zod.array(ListMedicationsResponseItem)
+
+
+/**
+ * @summary Add a medication manually
+ */
+export const AddMedicationBody = zod.object({
+  "name": zod.string(),
+  "dosage": zod.string(),
+  "frequency": zod.string(),
+  "reason": zod.string().nullish()
+})
+
+export const AddMedicationResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "dosage": zod.string(),
+  "frequency": zod.string(),
+  "acbScore": zod.number(),
+  "reason": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Remove a medication
+ */
+export const DeleteMedicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteMedicationResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "dosage": zod.string(),
+  "frequency": zod.string(),
+  "acbScore": zod.number(),
+  "reason": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Extract medication details from an uploaded image
+ */
+export const ExtractMedicationVisionBody = zod.object({
+  "imageUrl": zod.string()
+})
+
+export const ExtractMedicationVisionResponse = zod.object({
+  "name": zod.string(),
+  "dosage": zod.string(),
+  "frequency": zod.string(),
+  "acbScore": zod.number()
+})
+
+
+/**
+ * @summary Analyze current medications for ACB burden
+ */
+export const AnalyzeMedicationsResponse = zod.object({
+  "explanation": zod.string()
+})
+
+
+/**
+ * @summary Generate a new Doctor Brief document
+ */
+export const GenerateDoctorBriefResponse = zod.object({
+  "id": zod.number(),
+  "patientName": zod.string(),
+  "medicationFindings": zod.string(),
+  "checkInSummary": zod.string(),
+  "acbScore": zod.number(),
+  "key": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Get a shared Doctor Brief by its secure key
+ */
+export const GetSharedDoctorBriefParams = zod.object({
+  "key": zod.coerce.string()
+})
+
+export const GetSharedDoctorBriefResponse = zod.object({
+  "id": zod.number(),
+  "patientName": zod.string(),
+  "medicationFindings": zod.string(),
+  "checkInSummary": zod.string(),
+  "acbScore": zod.number(),
+  "key": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
  * @summary List daily routines
  */
 export const ListRoutinesResponseItem = zod.object({
@@ -233,6 +342,7 @@ export const ListRoutinesResponseItem = zod.object({
   "description": zod.string().nullish(),
   "time": zod.string().nullish(),
   "frequency": zod.string(),
+  "appointmentDate": zod.string().nullish(),
   "createdAt": zod.coerce.date()
 })
 export const ListRoutinesResponse = zod.array(ListRoutinesResponseItem)
@@ -248,7 +358,8 @@ export const CreateRoutineBody = zod.object({
   "name": zod.string().min(1),
   "description": zod.string().optional(),
   "time": zod.string().optional(),
-  "frequency": zod.string()
+  "frequency": zod.string(),
+  "appointmentDate": zod.string().optional()
 })
 
 export const CreateRoutineResponse = zod.object({
@@ -257,6 +368,7 @@ export const CreateRoutineResponse = zod.object({
   "description": zod.string().nullish(),
   "time": zod.string().nullish(),
   "frequency": zod.string(),
+  "appointmentDate": zod.string().nullish(),
   "createdAt": zod.coerce.date()
 })
 
@@ -284,6 +396,7 @@ export const UpdateRoutineResponse = zod.object({
   "description": zod.string().nullish(),
   "time": zod.string().nullish(),
   "frequency": zod.string(),
+  "appointmentDate": zod.string().nullish(),
   "createdAt": zod.coerce.date()
 })
 
@@ -351,6 +464,26 @@ export const GetCheckInDashboardResponse = zod.object({
   "actionsCompleted": zod.number(),
   "lastCheckInDate": zod.string().nullish(),
   "baselineTrend": zod.string()
+})
+
+
+/**
+ * @summary Get the most recently generated family letter
+ */
+export const GetLatestFamilyLetterResponse = zod.object({
+  "letter": zod.string()
+})
+
+
+/**
+ * @summary Generate a weekly letter to the family using AI
+ */
+export const GenerateFamilyLetterBody = zod.object({
+  "lang": zod.string()
+})
+
+export const GenerateFamilyLetterResponse = zod.object({
+  "letter": zod.string()
 })
 
 
@@ -574,22 +707,22 @@ export const DeleteTogetherAudioResponse = zod.void()
 /**
  * @summary List all conversations
  */
-export const ListAnthropicConversationsResponseItem = zod.object({
+export const ListGeminiConversationsResponseItem = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "createdAt": zod.coerce.date()
 })
-export const ListAnthropicConversationsResponse = zod.array(ListAnthropicConversationsResponseItem)
+export const ListGeminiConversationsResponse = zod.array(ListGeminiConversationsResponseItem)
 
 
 /**
  * @summary Create a new conversation
  */
-export const CreateAnthropicConversationBody = zod.object({
+export const CreateGeminiConversationBody = zod.object({
   "title": zod.string()
 })
 
-export const CreateAnthropicConversationResponse = zod.object({
+export const CreateGeminiConversationResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "createdAt": zod.coerce.date()
@@ -599,11 +732,11 @@ export const CreateAnthropicConversationResponse = zod.object({
 /**
  * @summary Get conversation with messages
  */
-export const GetAnthropicConversationParams = zod.object({
+export const GetGeminiConversationParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const GetAnthropicConversationResponse = zod.object({
+export const GetGeminiConversationResponse = zod.object({
   "id": zod.number(),
   "title": zod.string(),
   "createdAt": zod.coerce.date(),
@@ -620,42 +753,71 @@ export const GetAnthropicConversationResponse = zod.object({
 /**
  * @summary Delete a conversation
  */
-export const DeleteAnthropicConversationParams = zod.object({
+export const DeleteGeminiConversationParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const DeleteAnthropicConversationResponse = zod.void()
+export const DeleteGeminiConversationResponse = zod.void()
 
 
 /**
  * @summary List messages in a conversation
  */
-export const ListAnthropicMessagesParams = zod.object({
+export const ListGeminiMessagesParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const ListAnthropicMessagesResponseItem = zod.object({
+export const ListGeminiMessagesResponseItem = zod.object({
   "id": zod.number(),
   "conversationId": zod.number(),
   "role": zod.string(),
   "content": zod.string(),
   "createdAt": zod.coerce.date()
 })
-export const ListAnthropicMessagesResponse = zod.array(ListAnthropicMessagesResponseItem)
+export const ListGeminiMessagesResponse = zod.array(ListGeminiMessagesResponseItem)
 
 
 /**
  * @summary Send a message and receive an AI response (SSE stream)
  */
-export const SendAnthropicMessageParams = zod.object({
+export const SendGeminiMessageParams = zod.object({
   "id": zod.coerce.number()
 })
 
-export const SendAnthropicMessageBody = zod.object({
+export const SendGeminiMessageBody = zod.object({
   "content": zod.string(),
-  "systemPrompt": zod.string().optional()
+  "systemPrompt": zod.string().optional(),
+  "lang": zod.string().optional()
 })
 
-export const SendAnthropicMessageResponse = zod.unknown()
+export const SendGeminiMessageResponse = zod.unknown()
+
+
+/**
+ * @summary Get all life story entries
+ */
+export const ListLifeStoryEntriesResponseItem = zod.object({
+  "id": zod.number(),
+  "source": zod.enum(['checkin', 'conversation', 'together', 'manual']),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListLifeStoryEntriesResponse = zod.array(ListLifeStoryEntriesResponseItem)
+
+
+/**
+ * @summary Add a new life story entry manually or via hook
+ */
+export const CreateLifeStoryEntryBody = zod.object({
+  "source": zod.enum(['checkin', 'conversation', 'together', 'manual']),
+  "content": zod.string()
+})
+
+export const CreateLifeStoryEntryResponse = zod.object({
+  "id": zod.number(),
+  "source": zod.enum(['checkin', 'conversation', 'together', 'manual']),
+  "content": zod.string(),
+  "createdAt": zod.coerce.date()
+})
 
 

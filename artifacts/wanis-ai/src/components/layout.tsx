@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "wouter"
-import { Home, HeartPulse, Users, BookOpen, MessageCircle, Settings } from "lucide-react"
+import { Home, HeartPulse, Users, BookOpen, MessageCircle, Settings, Pill, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { KaabaIcon } from "@/components/KaabaIcon"
 import { useMode } from "@/contexts/ModeContext"
@@ -11,15 +11,17 @@ const RUFQA_COLOR = "#2F6D4F"
 
 // Page title map for the mobile top bar
 const PAGE_TITLES: Record<string, string> = {
-  "/": "Home",
+  "/": "Wanis",
   "/check-in": "Check-in",
   "/family": "Family",
   "/memory": "Memory",
   "/companion": "Talk",
-  "/guardian": "Rufqa",
+  "/rufqa": "Rufqa",
   "/duas": "Duas",
   "/recitation": "Recitation",
   "/together": "Together",
+  "/medications": "Medications",
+  "/doctor-briefs": "Doctor Brief",
 }
 
 function getCurrentTitle(location: string) {
@@ -30,18 +32,22 @@ function getCurrentTitle(location: string) {
 }
 
 const allNavItems = [
-  { nameKey: "home",     shortLabel: "Home",     href: "/",         icon: Home },
-  { nameKey: "check_in", shortLabel: "Check-in", href: "/check-in", icon: HeartPulse },
-  { nameKey: "family",   shortLabel: "Family",   href: "/family",   icon: Users },
-  { nameKey: "memory",   shortLabel: "Memory",   href: "/memory",   icon: BookOpen },
-  { nameKey: "talk",     shortLabel: "Talk",     href: "/companion", icon: MessageCircle },
-  { nameKey: "rufqa",    shortLabel: "Rufqa",    href: "/guardian", icon: KaabaIcon, rufqa: true },
+  { nameKey: "home",       shortLabel: "Home",       href: "/",             icon: Home },
+  { nameKey: "check_in",   shortLabel: "Check-in",   href: "/check-in",     icon: HeartPulse },
+  { nameKey: "family",     shortLabel: "Family",      href: "/family",       icon: Users },
+  { nameKey: "medications", shortLabel: "Meds",       href: "/medications",  icon: Pill },
+  { nameKey: "doctor_brief", shortLabel: "Brief",     href: "/doctor-briefs", icon: FileText },
+  { nameKey: "memory",     shortLabel: "Memory",      href: "/memory",       icon: BookOpen },
+  { nameKey: "talk",       shortLabel: "Talk",        href: "/companion",    icon: MessageCircle },
+  { nameKey: "recitation", shortLabel: "Recitation",  href: "/recitation",   icon: BookOpen },
+  { nameKey: "rufqa",      shortLabel: "Rufqa",       href: "/rufqa",        icon: KaabaIcon, rufqa: true },
 ] as const
 
 const personalNavItems = [
-  { nameKey: "home",     shortLabel: "Home",     href: "/",         icon: Home },
-  { nameKey: "talk",     shortLabel: "Talk",     href: "/companion", icon: MessageCircle },
-  { nameKey: "check_in", shortLabel: "Check-in", href: "/check-in", icon: HeartPulse },
+  { nameKey: "home",       shortLabel: "Home",       href: "/",           icon: Home },
+  { nameKey: "talk",       shortLabel: "Talk",       href: "/companion", icon: MessageCircle },
+  { nameKey: "check_in",   shortLabel: "Check-in",   href: "/check-in",  icon: HeartPulse },
+  { nameKey: "recitation", shortLabel: "Recitation", href: "/recitation", icon: BookOpen },
 ] as const
 
 function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
@@ -95,7 +101,7 @@ function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
 function MobileTopBar() {
   const [location] = useLocation()
   const title = getCurrentTitle(location)
-  const isRufqa = location === "/guardian" || location.startsWith("/guardian")
+  const isRufqa = location === "/rufqa" || location.startsWith("/rufqa")
 
   return (
     <div
@@ -103,12 +109,18 @@ function MobileTopBar() {
                  flex items-center justify-between px-4"
     >
       {/* Left: brand name or Rufqa accent */}
-      <span
-        className="text-lg font-serif font-bold"
-        style={isRufqa ? { color: RUFQA_COLOR } : undefined}
-      >
-        {title}
-      </span>
+      {title === "Wanis" ? (
+        <div className="flex items-center h-full">
+          <img src="/logo.png" alt="WanisAI" className="w-[110px] object-contain pointer-events-none -ml-4 -my-10" />
+        </div>
+      ) : (
+        <span
+          className="text-lg font-serif font-bold"
+          style={isRufqa ? { color: RUFQA_COLOR } : undefined}
+        >
+          {title}
+        </span>
+      )}
 
       {/* Right: lang + settings */}
       <div className="flex items-center gap-2">
@@ -206,16 +218,20 @@ export function Navigation() {
 
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-64 flex-col fixed inset-y-0 left-0 bg-card border-r border-border z-50">
-        <div className="p-6 pb-2">
-          <h1 className="text-2xl font-serif font-bold text-foreground">Wanis</h1>
+        <div className="w-full flex items-center justify-center pt-1 shrink-0">
+          <img 
+            src="/logo.png" 
+            alt="WanisAI" 
+            className="w-[200px] h-auto object-contain pointer-events-none -mt-12 -mb-12" 
+          />
         </div>
 
-        <div className="px-4 pb-2 flex items-center justify-between">
+        <div className="px-6 pb-2 pt-0 flex items-center justify-between shrink-0">
           <SettingsSheet />
           <LanguageSwitcher compact />
         </div>
 
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar">
           {allNavItems.map((item) => {
             const isActive =
               location === item.href ||

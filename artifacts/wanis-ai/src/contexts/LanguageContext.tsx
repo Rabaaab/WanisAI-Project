@@ -10,6 +10,8 @@ const translations: Record<Language, Record<string, string>> = {
     home: "Home",
     check_in: "Check-in",
     family: "Family",
+    medications: "Medications",
+    doctor_brief: "Doctor Brief",
     memory: "Memory",
     talk: "Talk",
     rufqa: "Hajj/Umrah Rufqa",
@@ -90,6 +92,21 @@ const translations: Record<Language, Record<string, string>> = {
     edit_profile: "Edit Profile",
     save_profile: "Save Profile",
 
+    // Family Circle
+    family_circle: "Family Circle",
+    people_who_matter: "The people who matter most.",
+    add_member: "Add Member",
+    add_family_member: "Add Family Member",
+    name: "Name",
+    phone_number: "Phone Number",
+    emergency_contact: "Emergency Contact",
+    emergency_contact_desc: "They can be reached quickly if needed",
+    save_member: "Save Member",
+    family_circle_empty: "Your family circle is empty",
+    add_family_desc: "Add family members so Wanis knows who is important to you.",
+    add_first_member: "Add First Member",
+    remove_family_member: "Remove this family member?",
+
     // Prayer
     prayer_times: "Prayer Times",
     prayer_fajr: "Fajr",
@@ -97,6 +114,32 @@ const translations: Record<Language, Record<string, string>> = {
     prayer_asr: "Asr",
     prayer_maghrib: "Maghrib",
     prayer_isha: "Isha",
+
+    // Together / Audio
+    audio_upload_prompt: "Record or upload a voice message, a song, or a story for your loved one.",
+    upload_audio_btn: "Upload a voice message or song",
+    uploading: "Uploading...",
+    familiar_sound: "A familiar sound",
+    songs_and_stories: "Songs and stories from your family",
+    play_something: "Play something",
+    shall_we_listen: "Shall we listen to something familiar?",
+    listening_to: "Listening to a familiar sound",
+    added_by: "Added by",
+
+    // Family Letter
+    letter_from_wanis: "Letter from Wanis",
+    generate_letter: "Generate this week's letter",
+    letter_loading: "Writing your letter…",
+    letter_date: "Generated on",
+    family_letter: "Family Letter",
+
+    // Life Story
+    their_story: "Their Story",
+    story_subtitle: "This story grows with every conversation, check-in, and memory shared.",
+    add_a_memory: "Add a memory",
+    memory_placeholder: "Write a story, a childhood memory, or a fact about this person…",
+    save_entry: "Save",
+    no_story_yet: "No story entries yet. They will grow here automatically.",
   },
 
   ar: {
@@ -104,6 +147,8 @@ const translations: Record<Language, Record<string, string>> = {
     home: "الرئيسية",
     check_in: "تسجيل الحال",
     family: "العائلة",
+    medications: "الأدوية",
+    doctor_brief: "موجز الطبيب",
     memory: "الذاكرة",
     talk: "تحدث",
     rufqa: "رفقة الحج/العمرة",
@@ -122,11 +167,11 @@ const translations: Record<Language, Record<string, string>> = {
     switch_account: "إعادة ضبط / تغيير الحساب",
 
     // Companion
-    companion_title: "وانيس هنا",
+    companion_title: "ونيس هنا",
     companion_subtitle: "رفيقك اليومي",
     hello: "مرحباً",
     im_here: "أنا هنا",
-    wanis_status: "وانيس يستمع",
+    wanis_status: "ونيس يستمع",
     type_message: "اكتب رسالة…",
     type_or_tap: "اكتب أو اضغط على الميكروفون…",
     listening: "أستمع…",
@@ -181,6 +226,21 @@ const translations: Record<Language, Record<string, string>> = {
     edit_profile: "تعديل الملف",
     save_profile: "حفظ الملف",
 
+    // Family Circle
+    family_circle: "دائرة العائلة",
+    people_who_matter: "أهم الناس في حياتك.",
+    add_member: "إضافة فرد",
+    add_family_member: "إضافة فرد من العائلة",
+    name: "الاسم",
+    phone_number: "رقم الهاتف",
+    emergency_contact: "جهة اتصال طوارئ",
+    emergency_contact_desc: "يمكن الوصول إليهم بسرعة عند الحاجة",
+    save_member: "حفظ الفرد",
+    family_circle_empty: "دائرة عائلتك فارغة",
+    add_family_desc: "أضف أفراد العائلة حتى يعرف ونيس من هم المهمون في حياتك.",
+    add_first_member: "إضافة أول فرد",
+    remove_family_member: "هل تريد حذف هذا الفرد؟",
+
     // Prayer
     prayer_times: "مواقيت الصلاة",
     prayer_fajr: "الفجر",
@@ -188,6 +248,32 @@ const translations: Record<Language, Record<string, string>> = {
     prayer_asr: "العصر",
     prayer_maghrib: "المغرب",
     prayer_isha: "العشاء",
+
+    // Together / Audio
+    audio_upload_prompt: "سجّل أو ارفع رسالة صوتية أو أغنية أو قصة لمن تحب.",
+    upload_audio_btn: "رفع رسالة صوتية أو أغنية",
+    uploading: "جاري الرفع...",
+    familiar_sound: "صوت مألوف",
+    songs_and_stories: "أغاني وقصص من عائلتك",
+    play_something: "تشغيل شيء ما",
+    shall_we_listen: "هل نستمع إلى شيء مألوف؟",
+    listening_to: "الاستماع إلى صوت مألوف",
+    added_by: "أضيف بواسطة",
+
+    // Family Letter
+    letter_from_wanis: "رسالة من ونيس",
+    generate_letter: "إنشاء رسالة هذا الأسبوع",
+    letter_loading: "جاري كتابة الرسالة…",
+    letter_date: "تم الإنشاء في",
+    family_letter: "رسالة العائلة",
+
+    // Life Story
+    their_story: "قصتهم",
+    story_subtitle: "تنمو هذه القصة مع كل محادثة وتسجيل وذكرى مشتركة.",
+    add_a_memory: "أضف ذكرى",
+    memory_placeholder: "اكتب قصة أو ذكرى من الطفولة أو معلومة عن هذا الشخص…",
+    save_entry: "حفظ",
+    no_story_yet: "لا توجد مدخلات بعد. ستنمو هنا تلقائيًا.",
   },
 
   fr: {
@@ -195,6 +281,8 @@ const translations: Record<Language, Record<string, string>> = {
     home: "Accueil",
     check_in: "Bilan",
     family: "Famille",
+    medications: "Médicaments",
+    doctor_brief: "Bilan médical",
     memory: "Mémoire",
     talk: "Parler",
     rufqa: "Rufqa Hajj/Umrah",
@@ -272,6 +360,21 @@ const translations: Record<Language, Record<string, string>> = {
     edit_profile: "Modifier le profil",
     save_profile: "Enregistrer le profil",
 
+    // Family Circle
+    family_circle: "Cercle familial",
+    people_who_matter: "Les personnes qui comptent le plus.",
+    add_member: "Ajouter un membre",
+    add_family_member: "Ajouter un membre de la famille",
+    name: "Nom",
+    phone_number: "Numéro de téléphone",
+    emergency_contact: "Contact d'urgence",
+    emergency_contact_desc: "Peut être contacté rapidement si nécessaire",
+    save_member: "Enregistrer le membre",
+    family_circle_empty: "Votre cercle familial est vide",
+    add_family_desc: "Ajoutez des membres de la famille pour que Wanis sache qui est important pour vous.",
+    add_first_member: "Ajouter le premier membre",
+    remove_family_member: "Supprimer ce membre de la famille ?",
+
     // Prayer
     prayer_times: "Horaires de prière",
     prayer_fajr: "Fajr",
@@ -279,6 +382,32 @@ const translations: Record<Language, Record<string, string>> = {
     prayer_asr: "Asr",
     prayer_maghrib: "Maghrib",
     prayer_isha: "Isha",
+
+    // Together / Audio
+    audio_upload_prompt: "Enregistrez ou téléchargez un message vocal, une chanson ou une histoire pour votre proche.",
+    upload_audio_btn: "Télécharger un message vocal ou une chanson",
+    uploading: "Téléchargement...",
+    familiar_sound: "Un son familier",
+    songs_and_stories: "Chansons et histoires de votre famille",
+    play_something: "Jouer quelque chose",
+    shall_we_listen: "Si on écoutait quelque chose de familier ?",
+    listening_to: "Écoute d'un son familier",
+    added_by: "Ajouté par",
+
+    // Family Letter
+    letter_from_wanis: "Lettre de Wanis",
+    generate_letter: "Générer la lettre de cette semaine",
+    letter_loading: "Rédaction de la lettre…",
+    letter_date: "Généré le",
+    family_letter: "Lettre familiale",
+
+    // Life Story
+    their_story: "Leur histoire",
+    story_subtitle: "Cette histoire grandit avec chaque conversation, bilan et souvenir partagé.",
+    add_a_memory: "Ajouter un souvenir",
+    memory_placeholder: "Écrivez une histoire, un souvenir d'enfance ou un fait sur cette personne…",
+    save_entry: "Enregistrer",
+    no_story_yet: "Aucune entrée pour l'instant. Elles apparaîtront automatiquement.",
   },
 }
 

@@ -14,12 +14,16 @@ import Onboarding from '@/pages/onboarding';
 import CheckIn from '@/pages/check-in';
 import CheckInDetail from '@/pages/check-in-detail';
 import Family from '@/pages/family';
-import Guardian from '@/pages/guardian';
+import Rufqa from '@/pages/rufqa';
 import Memory from '@/pages/memory';
 import Companion from '@/pages/companion';
 import Duas from '@/pages/duas';
 import Recitation from '@/pages/recitation';
 import Together from '@/pages/together';
+import LifeStory from '@/pages/life-story';
+import Medications from '@/pages/medications';
+import DoctorBriefs from '@/pages/doctor-briefs';
+import DoctorBriefShare from '@/pages/doctor-brief-share';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,7 +37,7 @@ const queryClient = new QueryClient({
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { mode } = useMode();
-  const hideNav = location === '/onboarding';
+  const hideNav = location === '/onboarding' || location.startsWith('/share/brief/');
   const isPersonal = mode === 'personal';
 
   return (
@@ -67,11 +71,15 @@ function Router() {
         <Route path="/check-in/:id" component={CheckInDetail} />
         <Route path="/family" component={Family} />
         <Route path="/memory" component={Memory} />
-        <Route path="/guardian" component={Guardian} />
+        <Route path="/rufqa" component={Rufqa} />
         <Route path="/companion" component={Companion} />
         <Route path="/duas" component={Duas} />
         <Route path="/recitation" component={Recitation} />
         <Route path="/together" component={Together} />
+        <Route path="/life-story" component={LifeStory} />
+        <Route path="/medications" component={Medications} />
+        <Route path="/doctor-briefs" component={DoctorBriefs} />
+        <Route path="/share/brief/:key" component={DoctorBriefShare} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
